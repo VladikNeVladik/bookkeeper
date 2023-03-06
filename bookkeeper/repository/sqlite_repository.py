@@ -40,13 +40,13 @@ class SQLiteRepository(AbstractRepository[T]):
         self.cls = cls
 
         # Pregenerate the queries to be used in database access methods:
-        names  = ", ".join(self.fields.keys())
-        ph     = ", ".join("?" * len(self.fields))
-        ph_upd = ", ".join([f"{field}=?" for field in self.fields.keys()])
+        names   = ", ".join(self.fields.keys())
+        pholder = ", ".join("?" * len(self.fields))
+        ph_upd  = ", ".join([f"{field}=?" for field in self.fields.keys()])
 
         self.queries = {
             'foreign_keys': "PRAGMA foreign_keys = ON",
-            'add':          f"INSERT INTO {self.table_name} ({names}) VALUES ({ph})",
+            'add':          f"INSERT INTO {self.table_name} ({names}) VALUES ({pholder})",
             'get':          f"SELECT ROWID, * FROM {self.table_name} WHERE ROWID = ?",
             'get_all':      f"SELECT ROWID, * FROM {self.table_name}",
             'update':       f"UPDATE {self.table_name} SET {ph_upd} WHERE ROWID = ?",

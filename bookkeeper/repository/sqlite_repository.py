@@ -6,13 +6,14 @@ import sqlite3
 
 from inspect  import get_annotations
 from datetime import datetime
-from typing   import Any
+from typing   import Any, Callable
 
 from bookkeeper.repository.abstract_repository import AbstractRepository, T
 
 ###################################
 ## SQL repository implementation ##
 ###################################
+
 
 class SQLiteRepository(AbstractRepository[T]):
     """
@@ -27,7 +28,7 @@ class SQLiteRepository(AbstractRepository[T]):
         # Type annotations:
         self.db_file    : str              # Database file
         self.table_name : str              # Name of a table in database
-        self.cls        : type             # Class to be stored in a database (also a class constructor)
+        self.cls        : Callable[[], T]  # Class constructor of type T
         self.fields     : dict[str, type]  # Field of a class to be stored
         self.queries    : dict[str, str]   # Shortcuts of SQL queries to be made
 
@@ -39,20 +40,24 @@ class SQLiteRepository(AbstractRepository[T]):
         self.cls = cls
 
         # Pregenerate the queries to be used in database access methods:
-        names               = ", ".join(self.fields.keys())
-        placeholders        = ", ".join("?" * len(self.fields))
-        placeholders_update = ", ".join([f"{field}=?" for field in self.fields.keys()])
+        names  = ", ".join(self.fields.keys())
+        ph     = ", ".join("?" * len(self.fields))
+        ph_upd = ", ".join([f"{field}=?" for field in self.fields.keys()])
 
         self.queries = {
-            'foreign_keys':  "PRAGMA foreign_keys = ON",
-            'add':          f"INSERT INTO {self.table_name} ({names}) VALUES ({placeholders})",
+            'foreign_keys': "PRAGMA foreign_keys = ON",
+            'add':          f"INSERT INTO {self.table_name} ({names}) VALUES ({ph})",
             'get':          f"SELECT ROWID, * FROM {self.table_name} WHERE ROWID = ?",
             'get_all':      f"SELECT ROWID, * FROM {self.table_name}",
-            'update':       f"UPDATE {self.table_name} SET {placeholders_update} WHERE ROWID = ?",
+            'update':       f"UPDATE {self.table_name} SET {ph_upd} WHERE ROWID = ?",
             'delete':       f"DELETE FROM {self.table_name} WHERE ROWID = ?",
         }
 
-    def generate_object(self, fields: dict[str, type], values: list[type]):
+    def generate_object(self, fields: dict[str, type], values: list[Any]) -> T:
+        """
+        Вспомогательный метод, используемый для генерации объектов класса T
+        из значений, хранящихся в базе даных.
+        """
         class_arguments = {}
 
         for field_name, field_value in zip(fields.keys(), values[1:]):

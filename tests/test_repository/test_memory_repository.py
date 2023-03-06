@@ -15,8 +15,7 @@ def custom_class():
 def repo():
     return MemoryRepository()
 
-@pytest.mark.parametrize("repo",
-    MemoryRepository(), SQLiteRepository(...))
+
 def test_crud(repo, custom_class):
     obj = custom_class()
     pk = repo.add(obj)

@@ -1,102 +1,155 @@
-from inspect import get_annotations
+"""
+Модуль описывает репозиторий, работающий поверх базы данных SQLite, хранящейся в файле.
+"""
+
 import sqlite3
 
-###############################
-## Database helper functions ##
-###############################
+from inspect  import get_annotations
+from datetime import datetime
+from typing   import Any
 
-def generate_objects(fields: dict[str, type], pk, values: list[type]):
-	obj = {'pk': pk}
-	for i, field in enumerate(fields):
-		setattr(obj, field, values[i])
-
-	return obj
-
+from bookkeeper.repository.abstract_repository import AbstractRepository, T
 
 ###################################
 ## SQL repository implementation ##
 ###################################
 
 class SQLiteRepository(AbstractRepository[T]):
-	"""
-	Репозиторий, основанный на БД SQLite. Работает поверх файловой системы.
-	"""
-	def __init__(self, db_file: str, cls: type) -> None:
-		# Type annotations:
-		self._db_file    : str
-		self._table_name : str
-		self._fields     : dict[str, type]
+    """
+    Репозиторий, основанный на БД SQLite. Работает поверх файловой системы.
+    """
 
-		self._db_file    = db_file
-		self._table_name = cls.__name__.lower()
-		self._fields     = get_annotations(cls, eval_str=True)
-		self._fields.pop('pk')
+    # Class static variables:
+    DEFAULT_DATE_FORMAT : str
+    DEFAULT_DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 
-	def add(self, obj: T) -> int:
-		# Check for input values:
-		if getattr(obj, 'pk', None) != 0:
-            raise ValueError(f'Trying to add object {obj} with filled `pk` attribute')
+    def __init__(self, db_file: str, cls: type) -> None:
+        # Type annotations:
+        self.db_file    : str              # Database file
+        self.table_name : str              # Name of a table in database
+        self.cls        : type             # Class to be stored in a database (also a class constructor)
+        self.fields     : dict[str, type]  # Field of a class to be stored
+        self.queries    : dict[str, str]   # Shortcuts of SQL queries to be made
+
+        # Initialization:
+        self.table_name = cls.__name__.lower()
+        self.db_file    = db_file
+        self.fields     = get_annotations(cls, eval_str=True)
+        self.fields.pop('pk')
+        self.cls = cls
+
+        # Pregenerate the queries to be used in database access methods:
+        names               = ", ".join(self.fields.keys())
+        placeholders        = ", ".join("?" * len(self.fields))
+        placeholders_update = ", ".join([f"{field}=?" for field in self.fields.keys()])
+
+        self.queries = {
+            'foreign_keys':  "PRAGMA foreign_keys = ON",
+            'add':          f"INSERT INTO {self.table_name} ({names}) VALUES ({placeholders})",
+            'get':          f"SELECT ROWID, * FROM {self.table_name} WHERE ROWID = ?",
+            'get_all':      f"SELECT ROWID, * FROM {self.table_name}",
+            'update':       f"UPDATE {self.table_name} SET {placeholders_update} WHERE ROWID = ?",
+            'delete':       f"DELETE FROM {self.table_name} WHERE ROWID = ?",
+        }
+
+    def generate_object(self, fields: dict[str, type], values: list[type]):
+        class_arguments = {}
+
+        for field_name, field_value in zip(fields.keys(), values[1:]):
+            field_type = fields[field_name]
+
+            if field_type == datetime:
+                field_value = datetime.strptime(field_value, self.DEFAULT_DATE_FORMAT)
+
+            class_arguments[field_name] = field_value
+
+        obj    = self.cls(**class_arguments)
+        obj.pk = values[0]
+
+        return obj
+
+    def add(self, obj: T) -> int:
+        # Check for input values:
+        if getattr(obj, 'pk', None) != 0:
+            raise ValueError(f"Unable to add object {obj} with filled `pk` attribute")
 
         # Generate the query:
-		names  = ", ".join(self._fields.keys())
-		p      = ", ".join("?" * len(self._fields))
-		values = [getattr(obj, x) for x in self._fields]
+        values = [getattr(obj, x) for x in self.fields]
 
-		with sqlite3.connect(self._db_file) as con:
-			cur = con.cursor()
-			cur.execute("PRAGMA foreign_keys = ON")
-			cur.execute(
-				f"INSERT INTO {self._table_name} ({names}) VALUES ({p})",
-				values
-			)
-			obj.pk = cur.lastrowid
+        with sqlite3.connect(self.db_file) as con:
+            cur = con.cursor()
+            cur.execute(self.queries['foreign_keys'])
 
-		con.close()
-		return obj.pk
+            # Insert row into database:
+            cur.execute(self.queries['add'], values)
+        con.close()
 
-	def get(self, pk: int) -> T | None:
-		# Generate the query:
-		with sqlite3.connect(self._db_file) as con:
-			cur = con.cursor()
-			res = cur.execute(f"SELECT * FROM {self._table_name} WHERE pk={pk}")
+        if cur.lastrowid is not None:
+            obj.pk = cur.lastrowid
 
-			rows       = res.fetchall()
-			num_rows = len(values)
+        return obj.pk
 
-			# Check result:
-			if num_rows == 0:
-				raise ValueError(f'No entry found with pk={pk}')
-			if num_rows > 1:
-				raise ValueError(f'Several entries found with pk={pk}')
+    def get(self, pk: int) -> T | None:
+        # Generate the query:
+        with sqlite3.connect(self.db_file) as con:
+            cur  = con.cursor()
+            rows = cur.execute(self.queries['get'], [pk]).fetchall()
+        con.close()
 
-		con.close()
+        # Check result:
+        num_rows = len(rows)
+        if num_rows == 0:
+            return None
+        if num_rows > 1:
+            raise ValueError(f"Several entries found with pk={pk}")
 
-		# Generate the resulting object:
-		return generate_object(self._fields, pk, rows[0])
+        # Generate the resulting object:
+        return self.generate_object(self.fields, rows[0])
 
-	def get_all(self, where: dict[str, Any] | None = None) -> list[T]:
-		with sqlite3.connect(self.db_file) as con:
-			cur = con.cursor()
-			if where is None:
-				res  = cur.execute(f"SELECT * FROM {self._table_name}")
-				rows = res.fetchall()
+    def get_all(self, where: dict[str, Any] | None = None) -> list[T]:
+        # Generate the query:
+        query_base = self.queries['get_all']
 
-				for row in rows
-        	else:
+        with sqlite3.connect(self.db_file) as con:
+            cur = con.cursor()
 
+            if where is not None:
+                conditions = " AND ".join([f"{field} = ?" for field in where.keys()])
+                query      = query_base + f" WHERE {conditions}"
 
+                rows = cur.execute(query, list(where.values())).fetchall()
+            else:
+                rows = cur.execute(query_base).fetchall()
+        con.close()
 
+        return [self.generate_object(self.fields, row) for row in rows]
 
+    def update(self, obj: T) -> None:
+        if getattr(obj, 'pk', None) is None:
+            raise ValueError("Unable to update object without `pk` attribute")
 
+        values = [getattr(obj, field) for field in self.fields] + [obj.pk]
 
+        with sqlite3.connect(self.db_file) as con:
+            cur = con.cursor()
+            cur.execute(self.queries['foreign_keys'])
 
+            # Update the entry with ROWID=pk:
+            print(self.queries['update'])
+            print(values)
 
+            cur.execute(self.queries['update'], values)
 
+            if cur.rowcount == 0:
+                raise ValueError(f"Unable to update object with pk={obj.pk}")
+        con.close()
 
+    def delete(self, pk: int) -> None:
+        with sqlite3.connect(self.db_file) as con:
+            cur = con.cursor()
 
-
-	def get_all(self, where: dict[str, Any] | None = None) -> list[T]:
-
-	def update(self, obj: T) -> None:
-
-	def delete(self, pk: int) -> None:
+            # Remove the entry with ROWID=pk:
+            cur.execute(self.queries['delete'], [pk])
+            if cur.rowcount == 0:
+                raise ValueError("Unable to delete object with pk={pk}")
+        con.close()

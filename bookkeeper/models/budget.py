@@ -8,7 +8,7 @@ from enum import Enum
 
 class Period(Enum):
     """
-    Enum для задания кванта планирования бюджета
+    Enum для задания кванта планирования бюджета.
     """
     DAY   = 0
     WEEK  = 1
@@ -20,7 +20,7 @@ class Period(Enum):
 )
 class Budget:
     """
-    Модель бюджета
+    Модель бюджета.
     """
 
     amount      : int      # The budget to be spend

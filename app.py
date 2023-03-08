@@ -3,7 +3,9 @@ from PySide6.QtCore import Qt
 
 import sys
 
+
 from bookkeeper.view.expense_table import LabeledExpenseTable
+from bookkeeper.view.budget_table  import LabeledBudgetTable
 from bookkeeper.view.new_expense   import NewExpense
 from bookkeeper.models.category import Category
 
@@ -13,7 +15,7 @@ if __name__ == "__main__":
     # Create window:
     window = QtWidgets.QWidget()
     window.setWindowTitle('Тестовый стенд')
-    window.resize(350, 150)
+    window.resize(500, 500)
 
     # Create expenses table:
     expenses = LabeledExpenseTable()
@@ -29,9 +31,19 @@ if __name__ == "__main__":
     categories = [Category(f"Категория {2*i}") for i in range(11)]
     new_expense = NewExpense(categories, None)
 
+    # Create budget:
+    budget = LabeledBudgetTable()
+
+    budget_data = [["1000",  "999",   "1"],
+                   ["7000",  "6999",  "1"],
+                   ["30000", "29999", "1"],]
+
+    budget.add_data(budget_data)
+
     # Create layout for window:
     vertical_layout = QtWidgets.QVBoxLayout()
 
+    vertical_layout.addWidget(budget)
     vertical_layout.addWidget(expenses)
     vertical_layout.addWidget(new_expense)
 

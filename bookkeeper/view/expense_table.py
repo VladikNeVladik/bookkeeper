@@ -1,7 +1,11 @@
-from PySide6 import QtWidgets
+from PySide6        import QtWidgets
 from PySide6.QtCore import Qt
 
 class ExpenseTableWidget(QtWidgets.QTableWidget):
+    """
+    Виджет для расхода.
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -39,6 +43,10 @@ class ExpenseTableWidget(QtWidgets.QTableWidget):
                 )
 
 class LabeledExpenseTable(QtWidgets.QGroupBox):
+    """
+    Виджет для расхода с подписью.
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

@@ -58,5 +58,21 @@ class LabeledBudgetTable(QtWidgets.QGroupBox):
 
         self.setLayout(self.vbox)
 
-    def add_data(self, data: list[list[str]]):
-        self.table.add_data(data)
+    def set_budgets(self, budgets: list[Budget]):
+        self.budgets = budgets
+        self.data    = self.budgets_to_data(self.budgets)
+
+        self.table.clearContents()
+        self.table.add_data(self.data)
+
+    def budgets_to_data(self, budgets: list[Budget]):
+        data = []
+        for period in ["day", "week", "month"]:
+            bdg = [b for b in budgets if b.period == period]
+            if len(bdg) == 0:
+                data.append(["- Не установлен -", "", "", None])
+            else:
+                b = bdg[0]
+                data.append([str(b.limitation), str(b.spent),
+                            str(int(b.limitation) - int(b.spent)), b.pk])
+        return data

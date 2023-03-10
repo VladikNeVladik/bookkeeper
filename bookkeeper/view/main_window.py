@@ -2,10 +2,10 @@ from PySide6        import QtWidgets
 from PySide6.QtCore import Qt
 from PySide6.QtGui  import QAction
 
-from bookkeeper.view.labelef     import LabeledCheckBox
-from bookkeeper.view.budget      import BudgetTableGroup
-from bookkeeper.view.expenses    import ExpensesTableGroup
-from bookkeeper.view.new_expense import NewExpenseGroup
+from bookkeeper.view.labeled       import LabeledCheckBox
+from bookkeeper.view.budget_table  import LabeledBudgetTable
+from bookkeeper.view.expense_table import LabeledExpenseTable
+from bookkeeper.view.new_expense   import NewExpense
 
 from bookkeeper.models.category import Category
 
@@ -15,9 +15,9 @@ class MainWindow(QtWidgets.QWidget):
     """
 
     def __init__(self,
-        budget_table  : BudgetTableGroup,
-        new_expense   : NewExpenseGroup,
-        expense_table : ExpensesTableGroup,
+        budget_table  : LabeledBudgetTable,
+        new_expense   : NewExpense,
+        expense_table : LabeledExpenseTable,
         *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
@@ -26,16 +26,16 @@ class MainWindow(QtWidgets.QWidget):
         self.setWindowTitle("Bookkeeper")
 
         # Window internal widgets:
-        self.budget_table   = budget_table
-        self.new_expense    = new_expense
-        self.expenses_table = expenses_table
+        self.budget_table  = budget_table
+        self.new_expense   = new_expense
+        self.expense_table = expense_table
 
         # Vertical layout:
         self.vbox = QtWidgets.QVBoxLayout()
 
-        self.vbox.addWidget(self.budget_table,   stretch=3)
-        self.vbox.addWidget(self.new_expense,    stretch=1)
-        self.vbox.addWidget(self.expenses_table, stretch=6)
+        self.vbox.addWidget(self.budget_table,  stretch=3)
+        self.vbox.addWidget(self.new_expense,   stretch=1)
+        self.vbox.addWidget(self.expense_table, stretch=6)
 
         self.setLayout(self.vbox)
 

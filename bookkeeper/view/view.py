@@ -77,7 +77,7 @@ class View:
     cats_edit_window : CategoryEditWindow
 
     def __init__(self):
-        self.app = QtWidgets.QApplication(sys.argv)
+        self.app = QtWidgets.QApplication.instance()
 
         self.config_category_edit()
         self.budget_table = LabeledBudgetTable(self.modify_budget)
@@ -167,7 +167,7 @@ class View:
 
     # Handler-wrapping:
     def set_expense_add_handler(self, exp_add_handler):
-        self.expense_add_handler = try_for_widget(exp_add_handler, self.main_window)
+        self.exp_add_handler = try_for_widget(exp_add_handler, self.main_window)
 
     def set_expense_delete_handler(self, exp_delete_handler):
         self.exp_delete_handler = try_for_widget(exp_delete_handler, self.main_window)
@@ -215,7 +215,7 @@ class View:
     def modify_budget(self, pk: int, new_limit: str, period: str):
         self.bdg_modify_handler(pk, new_limit, period)
 
-    def not_on_budget_message() -> None:
+    def not_on_budget_message(self) -> None:
         msg = "Бюджет исчерпан. Завтра же на завод!"
 
         QtWidgets.QMessageBox.warning(self.main_window, 'Мало зарабатываешь!!!', msg)

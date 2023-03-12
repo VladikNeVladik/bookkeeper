@@ -9,7 +9,7 @@ from bookkeeper.repository.sqlite_repository import SQLiteRepository
 ## Testing stand initialization ##
 ##################################
 
-DB_FILE    = "bookkeeper_test.db"
+DB_FILE    = "database/bookkeeper_test.db"
 FIELD_INT  = 58008
 FIELD_STR  = "\"I am string\""
 FIELD_DATE = datetime.now()

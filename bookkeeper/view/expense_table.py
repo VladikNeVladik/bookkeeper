@@ -16,6 +16,10 @@ class ExpenseTableWidget(QtWidgets.QTableWidget):
     ):
         super().__init__(*args, **kwargs)
 
+        self.expense_modify_handler = expense_modify_handler
+
+        self.col_to_attr = {0:"expense_date", 1:"amount", 2:"category", 3:"comment"}
+
         # Table configuration:
         self.setColumnCount(4)
         self.setRowCount(20)
@@ -62,8 +66,9 @@ class ExpenseTableWidget(QtWidgets.QTableWidget):
         self.expense_modify_handler(pk, attr, new_val)
 
     def add_data(self, data: list[list[str]]):
+        self.data = data
         for i, row in enumerate(data):
-            for j, item in enumerate(row):
+            for j, item in enumerate(row[:-1]):
                 self.setItem(
                     i, j,
                     QtWidgets.QTableWidgetItem(item.capitalize())
@@ -91,6 +96,10 @@ class LabeledExpenseTable(QtWidgets.QGroupBox):
 
         # Expense table:
         self.table = ExpenseTableWidget(expense_modify_handler)
+
+        # Delete button:
+        self.del_button = QtWidgets.QPushButton('Удалить выбранные траты')
+        self.del_button.clicked.connect(self.delete_selected_expenses)
 
         # Vertical layout:
         self.vbox = QtWidgets.QVBoxLayout()

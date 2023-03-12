@@ -88,9 +88,6 @@ class CategoryEditWindow(QtWidgets.QWidget):
         self.set_categories(cats)
 
     def set_categories(self, cats: list[Category]):
-        """
-        Рекурсивный обход списка категорий с построением их иерархии.
-        """
         self.categories = cats
 
         self.cat_names = [c.name for c in cats]
@@ -103,7 +100,7 @@ class CategoryEditWindow(QtWidgets.QWidget):
 
         self.cat_del.set_items(self.cat_names)
         self.cat_add_parent.set_items([CategoryEditWindow.NO_PARENT_CATEGORY]
-                                                        + self.cat_names)
+                                      + self.cat_names)
 
     def delete_category(self):
         # Category to be deleted:
@@ -112,18 +109,15 @@ class CategoryEditWindow(QtWidgets.QWidget):
         self.cat_delete_handler(del_cat_name)
         self.cat_del.clear()
 
-        # FIXME: Delete cat
-
-        self.set_categories()
-
     def set_cat_checker(self, checker):
         self.cat_checker = checker
 
     def add_category(self):
+        cat_add_name    = self.cat_add_name.text()
         parent_cat_name = self.cat_add_parent.text()
 
         if parent_cat_name == CategoryEditWindow.NO_PARENT_CATEGORY:
-            self.cat_add_handler(self.cat_add_name.text(), None)
+            self.cat_add_handler(cat_add_name, None)
         else:
             # FIXME: normal code would change added category
             #        for circular dependencies
@@ -132,14 +126,10 @@ class CategoryEditWindow(QtWidgets.QWidget):
             # Often only the presence of parent is checked:
             self.cat_checker(parent_cat_name)
 
-            self.cat_add_handler(self.cat_add_name.text(), self.cat_add_parent.text())
+            self.cat_add_handler(cat_add_name, parent_cat_name)
 
         self.cat_add_name.clear()
         self.cat_add_parent.clear()
-
-        # FIXME: Add cat
-
-        self.set_categories()
 
 
     def find_children(self, parent_pk=None):

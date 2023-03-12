@@ -111,7 +111,7 @@ def test_set_handler(monkeypatch):
     assert handler.call_count == 2
 
     # Test set_cat_checker:
-    view.set_cat_checker(handler)
+    view.set_category_checker(handler)
     view.cat_checker('cat_name')
     assert handler.call_count == 3
 

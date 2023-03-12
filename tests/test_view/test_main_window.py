@@ -26,9 +26,9 @@ def test_create_window(qtbot):
     qtbot.addWidget(window)
 
     # Verify the constructor:
-    assert window.budget_table   == budget_table
-    assert window.new_expense    == new_expense
-    assert window.expenses_table == expenses_table
+    assert window.budget_table  == budget_table
+    assert window.new_expense   == new_expense
+    assert window.expense_table == expenses_table
 
 def test_close_event(qtbot, monkeypatch):
     # Test the close event dialogue:

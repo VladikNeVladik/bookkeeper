@@ -46,12 +46,19 @@ class SQLiteRepository(AbstractRepository[T]):
 
         self.queries = {
             'foreign_keys': "PRAGMA foreign_keys = ON",
+            'create':       f"CREATE TABLE IF NOT EXISTS {self.table_name} ({names})",
             'add':          f"INSERT INTO {self.table_name} ({names}) VALUES ({pholder})",
             'get':          f"SELECT ROWID, * FROM {self.table_name} WHERE ROWID = ?",
             'get_all':      f"SELECT ROWID, * FROM {self.table_name}",
             'update':       f"UPDATE {self.table_name} SET {ph_upd} WHERE ROWID = ?",
             'delete':       f"DELETE FROM {self.table_name} WHERE ROWID = ?",
         }
+
+        # Create the requested table in the database file:
+        with sqlite3.connect(self.db_file) as con:
+            cur = con.cursor()
+            cur.execute(self.queries['create'])
+        con.close()
 
     def generate_object(self, fields: dict[str, type], values: list[Any]) -> T:
         """

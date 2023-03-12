@@ -40,7 +40,7 @@ class NewExpense(QtWidgets.QGroupBox):
 
         # Expense Submit
         self.submit_button = QtWidgets.QPushButton('Добавить')
-        self.submit_button.clicked.connect(self.submit)
+        self.submit_button.clicked.connect(self.add_expense)
 
         # Grid layout:
         self.grid = QtWidgets.QGridLayout()

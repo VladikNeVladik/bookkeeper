@@ -2,6 +2,7 @@
 Модель бюджета.
 """
 from dataclasses import dataclass
+from enum        import Enum
 from datetime    import datetime, timedelta
 
 from bookkeeper.repository.abstract_repository import AbstractRepository

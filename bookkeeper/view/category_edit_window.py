@@ -72,7 +72,7 @@ class CategoriesEditWindow(QtWidgets.QWidget):
 
         # AddWidget parameter meaning ---------> Y  X  dY  dX
         self.grid.addWidget(label_cats,          0, 0,  1,  2)
-        self.grid.addWidget(self.cats_tree,      1, 0,  1,  2)
+        self.grid.addWidget(self.cat_tree,       1, 0,  1,  2)
         self.grid.addWidget(label_del,           2, 0,  1,  2)
         self.grid.addWidget(self.cat_del,        3, 0,  1,  1)
         self.grid.addWidget(self.cat_del_button, 3, 1,  1,  1)
@@ -92,13 +92,13 @@ class CategoriesEditWindow(QtWidgets.QWidget):
         Рекурсивный обход списка категорий с построением их иерархии.
         """
 
-        self.cat_names = [c.name for c in cats]
+        self.cat_names = [c.name for c in self.categories]
 
         # Recursively traverse categories adding subcategories into the tree:
         cat_hierarchy = self.find_children()
 
-        self.cats_tree.clear()
-        self.cats_tree.insertTopLevelItems(0, cat_hierarchy)
+        self.cat_tree.clear()
+        self.cat_tree.insertTopLevelItems(0, cat_hierarchy)
 
         self.cat_del.set_items(self.cat_names)
         self.cat_add_parent.set_items([CategoriesEditWindow.NO_PARENT_CATEGORY]
@@ -132,7 +132,7 @@ class CategoriesEditWindow(QtWidgets.QWidget):
             #
             # Often only the presence of parent is checked:
             self.cat_checker(parent_name)
-            
+
             self.cat_add_handler(self, self.cat_add_name.text(), self.cat_add_parent.text())
 
         self.cat_add_name.clear()

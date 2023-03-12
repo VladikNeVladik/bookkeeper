@@ -1,6 +1,8 @@
 from PySide6        import QtWidgets
 from PySide6.QtCore import Qt
 
+from bookkeeper.models.budget import Budget, Period
+
 class BudgetTableWidget(QtWidgets.QTableWidget):
     """
     Виджет для бюджета.
@@ -30,10 +32,11 @@ class BudgetTableWidget(QtWidgets.QTableWidget):
     def add_data(self, data: list[list[str]]):
         for i, row in enumerate(data):
             for j, x in enumerate(row):
-                self.setItem(
-                    i, j,
-                    QtWidgets.QTableWidgetItem(x.capitalize())
-                )
+                if x is not None:
+                    self.setItem(
+                        i, j,
+                        QtWidgets.QTableWidgetItem(x.capitalize())
+                    )
 
 class LabeledBudgetTable(QtWidgets.QGroupBox):
     """
@@ -67,7 +70,7 @@ class LabeledBudgetTable(QtWidgets.QGroupBox):
 
     def budgets_to_data(self, budgets: list[Budget]):
         data = []
-        for period in ["day", "week", "month"]:
+        for period in [Period.DAY, Period.WEEK, Period.MONTH]:
             bdg = [b for b in budgets if b.period == period]
             if len(bdg) == 0:
                 data.append(["- Не установлен -", "", "", None])

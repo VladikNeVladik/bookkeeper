@@ -1,9 +1,8 @@
 from datetime import datetime
 
-from bookkeeper.view.view import AbstractView, View
+from bookkeeper.view.view import AbstractView
 
 from bookkeeper.repository.abstract_repository import AbstractRepository
-from bookkeeper.repository.sqlite_repository   import SQLiteRepository
 
 from bookkeeper.models.category import Category
 from bookkeeper.models.expense  import Expense
@@ -32,7 +31,7 @@ class Bookkeeper:
 
         self.view.set_category_add_handler   (self.add_category)
         self.view.set_category_delete_handler(self.delete_category)
-        self.view.set_cat_checker            (self.cat_checker)
+        self.view.set_category_checker       (self.cat_checker)
 
         #######################
         ## Budget repository ##
@@ -257,14 +256,3 @@ class Bookkeeper:
 
         # Final update:
         self.update_budgets()
-
-###################
-## Main finction ##
-###################
-
-if __name__ == '__main__':
-    view = View()
-    bookkeeper_app = Bookkeeper(view, SQLiteRepository)
-
-    # Execute it!
-    bookkeeper_app.start_app()

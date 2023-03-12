@@ -4,13 +4,14 @@ import sys
 from typing import Protocol, Callable
 
 from bookkeeper.view.main_window          import MainWindow
-from bookkeeper.view.budget               import BudgetTableGroup
-from bookkeeper.view.new_expense          import NewExpenseGroup
-from bookkeeper.view.expenses             import ExpensesTableGroup
+from bookkeeper.view.budget_table         import LabeledBudgetTable
+from bookkeeper.view.new_expense          import NewExpense
+from bookkeeper.view.expense_table        import LabeledExpenseTable
 from bookkeeper.view.category_edit_window import CategoriesEditWindow
 
 from bookkeeper.models.category import Category
 from bookkeeper.models.expense  import Expense
+from bookkeeper.models.budget   import Budget
 
 
 class AbstractView(Protocol):
@@ -49,7 +50,7 @@ class AbstractView(Protocol):
     def set_expense_modify_handler(exp_modify_handler: Callable[[int, str, str], None]) -> None:
         pass
 
-    def not_on_budget_message() -> None
+    def not_on_budget_message() -> None:
         pass
 
         self.view.set_expense_add_handler   (self.add_expense)
@@ -72,18 +73,20 @@ class View:
     main_window      : MainWindow
     budget_table     : LabeledBudgetTable
     new_expense      : NewExpense
-    expense_table    : LabeledExpensesTable
+    expense_table    : LabeledExpenseTable
     cats_edit_window : CategoriesEditWindow
 
     def __init__(self):
         self.app = QtWidgets.QApplication(sys.argv)
 
         self.config_category_edit()
-        self.budget_table = LabledBudgetTable()
+        self.budget_table = LabeledBudgetTable()
         self.new_expense  = NewExpense(self.categories,
-                                       self.cats_edit_show,
+                                       self.show_category_edit,
                                        self.add_expense)
-        self.expense_table = LabeledExpenseTable(self.category_pk_to_name)
+        self.expense_table = LabeledExpenseTable(self.category_pk_to_name,
+                                                 self.modify_expense,
+                                                 self.delete_expenses)
 
         self.config_main_window()
 
@@ -175,7 +178,7 @@ class View:
     # Direct operations:
     def set_expenses(self, exps: list[Expense]) -> None:
         self.expenses = exps
-        self.expenses_table.set_expenses(self.expenses)
+        self.expense_table.set_expenses(self.expenses)
 
     def add_expense(self, amount: str, cat_name: str, comment: str = ""):
         self.exp_add_handler(amount, cat_name, comment)
@@ -202,7 +205,7 @@ class View:
 
     # Handler-wrapping:
     def set_budget_modify_handler(self, bdg_modify_handler):
-        self.bdg_modify_handler = try_for_widget(bdg_modify_handler, self.main_window, handler)
+        self.bdg_modify_handler = try_for_widget(bdg_modify_handler, self.main_window)
 
     # Direct operations:
     def set_budgets(self, budgets: list[Budget]) -> None:

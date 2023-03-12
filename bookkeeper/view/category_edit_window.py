@@ -6,7 +6,7 @@ from typing import Callable
 from bookkeeper.models.category import Category
 from bookkeeper.view.labeled    import LabeledComboBoxInput, LabeledLineInput
 
-class CategoriesEditWindow(QtWidgets.QWidget):
+class CategoryEditWindow(QtWidgets.QWidget):
     """
     Окно для добавления/редактирования/удаления категорий
     """
@@ -35,6 +35,7 @@ class CategoriesEditWindow(QtWidgets.QWidget):
         # Category tree:
         self.cat_tree = QtWidgets.QTreeWidget()
         self.cat_tree.setHeaderLabel("")
+        self.cat_tree.itemDoubleClicked.connect(self.double_clicked)
 
         #===================#
         # Category deletion #
@@ -85,14 +86,14 @@ class CategoriesEditWindow(QtWidgets.QWidget):
 
         # Set categories when the class is all set up:
         self.set_categories(cats)
-        self.update_categories()
 
-    def update_categories(self):
+    def set_categories(self, cats: list[Category]):
         """
         Рекурсивный обход списка категорий с построением их иерархии.
         """
+        self.categories = cats
 
-        self.cat_names = [c.name for c in self.categories]
+        self.cat_names = [c.name for c in cats]
 
         # Recursively traverse categories adding subcategories into the tree:
         cat_hierarchy = self.find_children()
@@ -101,21 +102,19 @@ class CategoriesEditWindow(QtWidgets.QWidget):
         self.cat_tree.insertTopLevelItems(0, cat_hierarchy)
 
         self.cat_del.set_items(self.cat_names)
-        self.cat_add_parent.set_items([CategoriesEditWindow.NO_PARENT_CATEGORY]
+        self.cat_add_parent.set_items([CategoryEditWindow.NO_PARENT_CATEGORY]
                                                         + self.cat_names)
-
-    def set_categories(self, cats: list[Category]):
-        self.categories = cats
 
     def delete_category(self):
         # Category to be deleted:
         del_cat_name = self.cat_del.text()
 
-        self.cat_delete_handler(self, del_cat_name)
+        self.cat_delete_handler(del_cat_name)
         self.cat_del.clear()
 
-        # Assume that cat_delete_handler() has called set_categories():
-        self.update_categories()
+        # FIXME: Delete cat
+
+        self.set_categories()
 
     def set_cat_checker(self, checker):
         self.cat_checker = checker
@@ -123,23 +122,24 @@ class CategoriesEditWindow(QtWidgets.QWidget):
     def add_category(self):
         parent_cat_name = self.cat_add_parent.text()
 
-        if parent_name == CategoriesEditWindow.NO_PARENT_CATEGORY:
-            self.cat_add_handler(self, self.cat_add_name.text(), None)
+        if parent_cat_name == CategoryEditWindow.NO_PARENT_CATEGORY:
+            self.cat_add_handler(self.cat_add_name.text(), None)
         else:
             # FIXME: normal code would change added category
             #        for circular dependencies
             #        as they would hang the program
             #
             # Often only the presence of parent is checked:
-            self.cat_checker(parent_name)
+            self.cat_checker(parent_cat_name)
 
-            self.cat_add_handler(self, self.cat_add_name.text(), self.cat_add_parent.text())
+            self.cat_add_handler(self.cat_add_name.text(), self.cat_add_parent.text())
 
         self.cat_add_name.clear()
         self.cat_add_parent.clear()
 
-        # Assume that cat_add_handler() has called set_categories():
-        self.update_categories()
+        # FIXME: Add cat
+
+        self.set_categories()
 
 
     def find_children(self, parent_pk=None):
@@ -159,3 +159,10 @@ class CategoriesEditWindow(QtWidgets.QWidget):
             items.append(item)
 
         return items
+
+    def double_clicked(self, item, column):
+        clicked_cat_name = item.text(column)
+
+        # Put into input lines the name of double-clicked category:
+        self.cat_del.set_text(clicked_cat_name)
+        self.cat_add_parent.set_text(clicked_cat_name)

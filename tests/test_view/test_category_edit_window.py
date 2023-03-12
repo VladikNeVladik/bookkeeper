@@ -4,17 +4,18 @@
 
 from pytestqt.qt_compat import qt_api
 
-from bookkeeper.view.category_edit import CategoryEditWindow
+from bookkeeper.view.category_edit_window import CategoryEditWindow
+
 from bookkeeper.models.category import Category
 
 # Dummy handlers:
-cat_add_handler    = lambda name, parent: None
-cat_delete_handler = lambda cat_name: None
-cat_checker        = lambda parent_name: None
+cat_add_handler    = lambda name, parent : None
+cat_delete_handler = lambda cat_name     : None
+cat_checker        = lambda parent_name  : None
 
 def test_create_window(qtbot):
     # Create widget:
-    widget = CategoriesEditWindow([], cat_add_handler, cat_delete_handler)
+    widget = CategoryEditWindow([], cat_add_handler, cat_delete_handler)
     qtbot.addWidget(widget)
 
     # Verify the constructor:
@@ -23,7 +24,7 @@ def test_create_window(qtbot):
 
 def test_set_categories(qtbot):
     # Create widget and fill it with data:
-    widget = CategoriesEditWindow([], cat_add_handler, cat_delete_handler)
+    widget = CategoryEditWindow([], cat_add_handler, cat_delete_handler)
     qtbot.addWidget(widget)
 
     cats = [Category("cat1",   pk=1),
@@ -31,6 +32,7 @@ def test_set_categories(qtbot):
             Category("cat11",  pk=11,  parent=1),
             Category("cat12",  pk=12,  parent=1),
             Category("cat121", pk=121, parent=12)]
+
     widget.set_categories(cats)
 
     # Verify the categories:
@@ -38,15 +40,15 @@ def test_set_categories(qtbot):
     assert widget.cat_names  == [c.name for c in cats]
 
     # Verify category tree structure:
-    assert widget.cats_tree.topLevelItem(0).text(0) == "cat1"
-    assert widget.cats_tree.topLevelItem(1).text(0) == "cat2"
-    assert widget.cats_tree.topLevelItem(0).child(0).text(0) == "cat11"
-    assert widget.cats_tree.topLevelItem(0).child(1).text(0) == "cat12"
-    assert widget.cats_tree.topLevelItem(0).child(1).child(0).text(0) == "cat121"
+    assert widget.cat_tree.topLevelItem(0).text(0) == "cat1"
+    assert widget.cat_tree.topLevelItem(1).text(0) == "cat2"
+    assert widget.cat_tree.topLevelItem(0).child(0).text(0) == "cat11"
+    assert widget.cat_tree.topLevelItem(0).child(1).text(0) == "cat12"
+    assert widget.cat_tree.topLevelItem(0).child(1).child(0).text(0) == "cat121"
 
 def test_set_cat_checker(qtbot):
     # Create widget with checker handler set:
-    widget = CategoriesEditWindow([], cat_add_handler, cat_delete_handler)
+    widget = CategoryEditWindow([], cat_add_handler, cat_delete_handler)
     qtbot.addWidget(widget)
 
     widget.set_cat_checker(cat_checker)
@@ -56,13 +58,13 @@ def test_set_cat_checker(qtbot):
 
 def test_double_clicked(qtbot):
     # Create widget:
-    widget = CategoriesEditWindow([Category("cat1", pk=1)],
+    widget = CategoryEditWindow([Category("cat1", pk=1)],
                                   cat_add_handler, cat_delete_handler)
     qtbot.addWidget(widget)
 
     # Double click at the top-most category:
-    item = widget.cats_tree.topLevelItem(0)
-    widget.cats_tree.itemDoubleClicked.emit(item, 0)
+    item = widget.cat_tree.topLevelItem(0)
+    widget.cat_tree.itemDoubleClicked.emit(item, 0)
     clicked_cat_name = item.text(0)
 
     # Verify the category that was clicked is selected
@@ -80,7 +82,7 @@ def test_delete_category(qtbot):
     cat_delete_handler.was_called = False
 
     # Create widget:
-    widget = CategoriesEditWindow([Category("cat1", pk=1)],
+    widget = CategoryEditWindow([Category("cat1", pk=1)],
                                    cat_add_handler, cat_delete_handler)
     qtbot.addWidget(widget)
 
@@ -105,7 +107,7 @@ def test_add_category(qtbot):
     cat_add_handler.was_called = False
 
     # Create widget:
-    widget = CategoriesEditWindow([Category("cat1", pk=1)],
+    widget = CategoryEditWindow([Category("cat1", pk=1)],
                                    cat_add_handler, cat_delete_handler)
     qtbot.addWidget(widget)
     widget.set_cat_checker(cat_checker)
@@ -132,7 +134,7 @@ def test_add_category_no_parent(qtbot):
     cat_add_handler.was_called = False
 
     # Create widget:
-    widget = CategoriesEditWindow([], cat_add_handler, cat_delete_handler)
+    widget = CategoryEditWindow([], cat_add_handler, cat_delete_handler)
     qtbot.addWidget(widget)
 
     widget.set_cat_checker(cat_checker)

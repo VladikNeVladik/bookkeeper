@@ -4,9 +4,10 @@
 
 from pytestqt.qt_compat import qt_api
 
-from bookkeeper.models.expense     import Expense
-from bookkeeper.view.expense_table import ExpensesTableWidget, \
-                                          LabeledExpensesTable
+from bookkeeper.view.expense_table import ExpenseTableWidget, \
+                                          LabeledExpenseTable
+
+from bookkeeper.models.expense import Expense
 
 test_data = [["1_1", "1_2", "1_3", "1_4", 1],
              ["2_1", "2_2", "2_3", "2_4", 2],]

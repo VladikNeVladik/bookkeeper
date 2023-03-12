@@ -4,25 +4,26 @@
 
 from pytestqt.qt_compat import qt_api
 
-from bookkeeper.view.budget import BudgetTableWidget, LabeledBudgetTable
-from bookkeeper.models.budget import Budget
+from bookkeeper.view.budget_table import BudgetTableWidget, LabeledBudgetTable
+
+from bookkeeper.models.budget import Budget, Period
 
 test_data = [["1_1", "1_2", "1_3", 1],
              ["2_1", "2_2", "2_3", 2],]
 
-bdg_modifier = lambda pk, new_limit, period: None
+budget_modify_handler = lambda pk, new_limit, period: None
 
 def test_create_widget(qtbot):
     # Create widget:
-    widget = BudgetTableWidget(bdg_modifier)
+    widget = BudgetTableWidget(budget_modify_handler)
     qtbot.addWidget(widget)
 
     # Test constructor:
-    assert widget.bdg_modifier == bdg_modifier
+    assert widget.budget_modify_handler == budget_modify_handler
 
 def test_add_data(qtbot):
     # Create widget:
-    widget = BudgetTableWidget(bdg_modifier)
+    widget = BudgetTableWidget(budget_modify_handler)
     qtbot.addWidget(widget)
 
     # Fill widget with data:
@@ -49,39 +50,40 @@ def test_add_data(qtbot):
 
 def test_cell_changed(qtbot):
     # Define a modify handler to be called on cell edit:
-    def bdg_modifier(pk, new_limit, period):
-        bdg_modifier.was_called = True
+    def budget_modify_handler(pk, new_limit, period):
+        budget_modify_handler.was_called = True
+
         assert pk        == test_data[1][-1]
         assert new_limit == test_data[1][0]
         assert period    == Period.WEEK
 
-    bdg_modifier.was_called = False
+    budget_modify_handler.was_called = False
 
     # Create widget and fill it with data:
-    widget = BudgetTableWidget(bdg_modifier)
+    widget = BudgetTableWidget(budget_modify_handler)
     qtbot.addWidget(widget)
 
     widget.add_data(test_data)
 
     # Check the edit without selection:
     widget.cellChanged.emit(1,0)
-    assert bdg_modifier.was_called == False
+    assert budget_modify_handler.was_called == False
 
     # Check the edit after selection:
     widget.cellDoubleClicked.emit(1,0)
     widget.cellChanged.emit(1,0)
-    assert bdg_modifier.was_called == True
+    assert budget_modify_handler.was_called == True
 
 def test_create_group(qtbot):
     # Test the creation of LabeledBudgetTable:
-    widget = LabeledBudgetTable(bdg_modifier)
+    widget = LabeledBudgetTable(budget_modify_handler)
     qtbot.addWidget(widget)
 
     # No assertions can be made in here :(
 
 def test_set_budgets(qtbot):
     # Create widget and set it's data:
-    widget = LabeledBudgetTable(bdg_modifier)
+    widget = LabeledBudgetTable(budget_modify_handler)
     qtbot.addWidget(widget)
 
     bdgs = [Budget(1000, "day", spent=100),

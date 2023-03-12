@@ -4,10 +4,10 @@
 
 from pytestqt.qt_compat import qt_api
 
-from bookkeeper.view.main_window  import MainWindow
-from bookkeeper.view.new_expense  import NewExpense
-from bookkeeper.view.budget       import LabeledBudgetTable
-from bookkeeper.view.expenses     import LabeledExpenseTable
+from bookkeeper.view.main_window   import MainWindow
+from bookkeeper.view.new_expense   import NewExpense
+from bookkeeper.view.budget_table  import LabeledBudgetTable
+from bookkeeper.view.expense_table import LabeledExpenseTable
 
 # Define dummy handlers:
 modifier       = lambda pk, val1, val2: None

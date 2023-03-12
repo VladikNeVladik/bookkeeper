@@ -1,6 +1,8 @@
 from PySide6        import QtWidgets
 from PySide6.QtCore import Qt
 
+from typing import Callable
+
 from bookkeeper.models.budget import Budget, Period
 
 class BudgetTableWidget(QtWidgets.QTableWidget):
@@ -8,8 +10,17 @@ class BudgetTableWidget(QtWidgets.QTableWidget):
     Виджет для бюджета.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self,
+        budget_modify_handler : Callable,
+        *args, **kwargs
+    ):
         super().__init__(*args, **kwargs)
+
+        self.budget_modify_handler = budget_modify_handler
+
+        self.row_to_period = {0:Period.DAY,
+                              1:Period.WEEK,
+                              2:Period.MONTH}
 
         # Table configuration:
         self.setColumnCount(3)
@@ -29,21 +40,54 @@ class BudgetTableWidget(QtWidgets.QTableWidget):
         self.setEditTriggers(
             QtWidgets.QAbstractItemView.DoubleClicked)
 
+        # On double click set "cell edited" handler
+        self.cellDoubleClicked.connect(self.double_click)
+
+    def double_click(self, row, columns):
+        self.cellChanged.connect(self.cell_changed)
+
+    def cell_changed(self, row, column):
+        # Disconnect this handler:
+        self.cellChanged.disconnect(self.cell_changed)
+
+        # Perform the database request:
+        pk = self.data[row][-1]
+        new_limit = self.item(row, column).text()
+        self.budget_modify_handler(pk, new_limit, self.row_to_period[row])
+
+
     def add_data(self, data: list[list[str]]):
+        self.data = data
+
+        # Fill the table with data:
         for i, row in enumerate(data):
-            for j, x in enumerate(row):
-                if x is not None:
-                    self.setItem(
-                        i, j,
-                        QtWidgets.QTableWidgetItem(x.capitalize())
-                    )
+            for j, x in enumerate(row[:-1]):
+                self.setItem(
+                    i, j,
+                    QtWidgets.QTableWidgetItem(x.capitalize())
+                )
+
+                # Set the alignment:
+                self.item(i, j).setTextAlignment(Qt.AlignCenter)
+
+                # Select the upper row for edit:
+                if j == 0:
+                    self.item(i, j).setFlags(Qt.ItemIsEditable
+                                             | Qt.ItemIsEnabled
+                                             | Qt.ItemIsSelectable)
+                else:
+                    self.item(i, j).setFlags(Qt.ItemIsEnabled)
+
 
 class LabeledBudgetTable(QtWidgets.QGroupBox):
     """
     Виджет для бюджета с подписью.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self,
+        budget_modify_handler: Callable,
+        *args, **kwargs
+    ):
         super().__init__(*args, **kwargs)
 
         # Label:
@@ -51,7 +95,7 @@ class LabeledBudgetTable(QtWidgets.QGroupBox):
         self.label.setAlignment(Qt.AlignCenter)
 
         # Budget table:
-        self.table = BudgetTableWidget()
+        self.table = BudgetTableWidget(budget_modify_handler)
 
         # Vertical layout:
         self.vbox = QtWidgets.QVBoxLayout()
@@ -70,6 +114,8 @@ class LabeledBudgetTable(QtWidgets.QGroupBox):
 
     def budgets_to_data(self, budgets: list[Budget]):
         data = []
+
+        # Iterate over subtables:
         for period in [Period.DAY, Period.WEEK, Period.MONTH]:
             bdg = [b for b in budgets if b.period == period]
             if len(bdg) == 0:
@@ -77,5 +123,5 @@ class LabeledBudgetTable(QtWidgets.QGroupBox):
             else:
                 b = bdg[0]
                 data.append([str(b.limitation), str(b.spent),
-                            str(int(b.limitation) - int(b.spent)), b.pk])
+                            str(b.limitation - b.spent), b.pk])
         return data

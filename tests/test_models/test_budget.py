@@ -10,21 +10,24 @@ def repo():
     return MemoryRepository()
 
 def test_create_with_full_args_list():
-    b = Budget(amount=100, category_id=1, period=Period.DAY, pk=2)
-    assert b.amount      == 100
-    assert b.category_id == 1
-    assert b.period      == Period.DAY
-    assert b.pk          == 2
+    b = Budget(limitation=100, period="day", spent=10, pk=2)
+
+    assert b.limitation == 100
+    assert b.period     == Period.DAY
+    assert b.spent      == 10
+    assert b.pk         == 2
 
 def test_create_brief():
-    b = Budget(100, 1, Period.DAY, 2)
-    assert b.amount      == 100
-    assert b.category_id == 1
-    assert b.period      == Period.DAY
-    assert b.pk          == 2
+    b = Budget(100, "day", 10, 2)
+
+    assert b.limitation == 100
+    assert b.period     == Period.DAY
+    assert b.spent      == 10
+    assert b.pk         == 2
 
 
 def test_can_add_to_repo(repo):
-    b = Budget(100, 1, Period.DAY)
+    b  = Budget(100, "day", 10)
     pk = repo.add(b)
+
     assert b.pk == pk

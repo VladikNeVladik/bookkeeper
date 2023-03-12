@@ -7,7 +7,7 @@ from bookkeeper.view.main_window          import MainWindow
 from bookkeeper.view.budget_table         import LabeledBudgetTable
 from bookkeeper.view.new_expense          import NewExpense
 from bookkeeper.view.expense_table        import LabeledExpenseTable
-from bookkeeper.view.category_edit_window import CategoriesEditWindow
+from bookkeeper.view.category_edit_window import CategoryEditWindow
 
 from bookkeeper.models.category import Category
 from bookkeeper.models.expense  import Expense
@@ -74,13 +74,13 @@ class View:
     budget_table     : LabeledBudgetTable
     new_expense      : NewExpense
     expense_table    : LabeledExpenseTable
-    cats_edit_window : CategoriesEditWindow
+    cats_edit_window : CategoryEditWindow
 
     def __init__(self):
         self.app = QtWidgets.QApplication(sys.argv)
 
         self.config_category_edit()
-        self.budget_table = LabeledBudgetTable()
+        self.budget_table = LabeledBudgetTable(self.modify_budget)
         self.new_expense  = NewExpense(self.categories,
                                        self.show_category_edit,
                                        self.add_expense)
@@ -95,7 +95,7 @@ class View:
     ###########################
 
     def config_category_edit(self):
-        self.cats_edit_window = CategoriesEditWindow(
+        self.cats_edit_window = CategoryEditWindow(
             self.categories,
             self.add_category,
             self.delete_category)

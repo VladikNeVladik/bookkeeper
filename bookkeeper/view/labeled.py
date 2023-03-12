@@ -64,6 +64,9 @@ class LabeledLineInput(QtWidgets.QWidget):
     def text(self):
         return self.input.text()
 
+    def set_text(self, text: str) -> None:
+        self.input.setText(text)
+
 class LabeledComboBoxInput(QtWidgets.QWidget):
     """
     Поле выбора из нескольких вариантов.
@@ -96,6 +99,9 @@ class LabeledComboBoxInput(QtWidgets.QWidget):
 
     def text(self):
         return self.combo_box.currentText()
+
+    def set_text(self, text: str) -> None:
+        self.combo_box.setCurrentText(text)
 
     def set_items(self, items: list[str]):
         self.items = items

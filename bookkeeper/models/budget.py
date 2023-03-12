@@ -25,21 +25,21 @@ class Budget:
     """
     limitation : int      # Maximum allowed sum of spendings
     period     : Period   # The period to be budgeted
-    spent      : str = 0  # The amount of money spent in the period
-    pk         : str = 0  # Primary key
+    spent      : int = 0  # The amount of money spent in the period
+    pk         : int = 0  # Primary key
 
     def __init__(self, limitation: int, period: str,
-                       spent: str = 0, pk: str = 0):
+                       spent: int = 0, pk: int = 0):
         # Parse the period:
         if period == "day":
             self.period = Period.DAY
-        if period == "week":
+        elif period == "week":
             self.period = Period.WEEK
-        if period == "month":
+        elif period == "month":
             self.period = Period.MONTH
         else:
-            raise ValueError(f'unknown period "{period}" for budget'
-                             + 'should be "day", "week" or "month"')
+            raise ValueError(f"unknown period \"{period}\" for budget\n"
+                             + "should be \"day\", \"week\" or \"month\"")
 
         # Set other parameters:
         self.limitation = limitation

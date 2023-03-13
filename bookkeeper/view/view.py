@@ -12,6 +12,7 @@ from bookkeeper.models.category import Category
 from bookkeeper.models.expense  import Expense
 from bookkeeper.models.budget   import Budget
 
+
 # Utility function:
 def try_for_widget(
     operation : Callable[..., Any],
@@ -23,6 +24,7 @@ def try_for_widget(
         except ValueError as exc:
             QtWidgets.QMessageBox.critical(widget, 'Ошибка', str(exc))
     return inner
+
 
 class View:
     """
@@ -176,14 +178,15 @@ class View:
 
     def delete_expenses(self, exp_pks: set[int]) -> None:
         if len(exp_pks) == 0:
-            QtWidgets.QMessageBox.critical(self.main_window,
-                            'Ошибка',
-                            'Траты для удаления не выбраны.')
+            QtWidgets.QMessageBox.critical(
+                self.main_window,
+                "Ошибка",
+                "Траты для удаления не выбраны.")
         else:
             reply = QtWidgets.QMessageBox.question(
                 self.main_window,
-                'Удаление трат',
-                'Вы уверены, что хотите удалить все выбранные траты?')
+                "Удаление трат",
+                "Вы уверены, что хотите удалить все выбранные траты?")
             if reply == QtWidgets.QMessageBox.Yes:  # type: ignore
                 self.exp_delete_handler(exp_pks)
 
@@ -225,4 +228,4 @@ class View:
     def not_on_budget_message(self) -> None:
         msg = "Бюджет исчерпан. Завтра же на завод!"
 
-        QtWidgets.QMessageBox.warning(self.main_window, 'Мало зарабатываешь!!!', msg)
+        QtWidgets.QMessageBox.warning(self.main_window, "Мало зарабатываешь!!!", msg)

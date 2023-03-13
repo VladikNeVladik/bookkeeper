@@ -7,6 +7,7 @@ from bookkeeper.view.labeled import LabeledComboBoxInput, LabeledLineInput
 
 from bookkeeper.models.category import Category
 
+
 class NewExpense(QtWidgets.QGroupBox):
     """
     Интерфейс для ввода новых затрат.

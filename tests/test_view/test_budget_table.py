@@ -13,6 +13,7 @@ test_data = [["1_1", "1_2", "1_3", 1],
 
 budget_modify_handler = lambda pk, new_limit, period: None
 
+
 def test_create_widget(qtbot):
     # Create widget:
     widget = BudgetTableWidget(budget_modify_handler)
@@ -20,6 +21,7 @@ def test_create_widget(qtbot):
 
     # Test constructor:
     assert widget.budget_modify_handler == budget_modify_handler
+
 
 def test_add_data(qtbot):
     # Create widget:
@@ -39,9 +41,9 @@ def test_add_data(qtbot):
 
             if j == 0:
                 # Check first row for being selected:
-                flags = (qt_api.QtCore.Qt.ItemIsEditable
-                        | qt_api.QtCore.Qt.ItemIsEnabled
-                        | qt_api.QtCore.Qt.ItemIsSelectable)
+                flags = (qt_api.QtCore.Qt.ItemIsEditable |
+                         qt_api.QtCore.Qt.ItemIsEnabled  |
+                         qt_api.QtCore.Qt.ItemIsSelectable)
                 assert widget.item(i, j).flags() == flags
             else:
                 # Check first all other rows for the editability:
@@ -66,13 +68,14 @@ def test_cell_changed(qtbot):
     widget.add_data(test_data)
 
     # Check the edit without selection:
-    widget.cellChanged.emit(1,0)
-    assert budget_modify_handler.was_called == False
+    widget.cellChanged.emit(1, 0)
+    assert budget_modify_handler.was_called is False
 
     # Check the edit after selection:
-    widget.cellDoubleClicked.emit(1,0)
-    widget.cellChanged.emit(1,0)
-    assert budget_modify_handler.was_called == True
+    widget.cellDoubleClicked.emit(1, 0)
+    widget.cellChanged.emit(1, 0)
+    assert budget_modify_handler.was_called is True
+
 
 def test_create_group(qtbot):
     # Test the creation of LabeledBudgetTable:
@@ -80,6 +83,7 @@ def test_create_group(qtbot):
     qtbot.addWidget(widget)
 
     # No assertions can be made in here :(
+
 
 def test_set_budgets(qtbot):
     # Create widget and set it's data:

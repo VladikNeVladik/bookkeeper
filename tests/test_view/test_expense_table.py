@@ -4,8 +4,7 @@
 
 from pytestqt.qt_compat import qt_api
 
-from bookkeeper.view.expense_table import ExpenseTableWidget, \
-                                          LabeledExpenseTable
+from bookkeeper.view.expense_table import ExpenseTableWidget, LabeledExpenseTable
 
 from bookkeeper.models.expense import Expense
 
@@ -17,6 +16,7 @@ expense_modify_handler = lambda pk, attr, new_val: None
 category_pk_to_name    = lambda pk: "1_3"
 exp_delete_handler     = lambda exp_pks: None
 
+
 def test_create_widget(qtbot):
     # Create widget:
     widget = ExpenseTableWidget(expense_modify_handler)
@@ -24,6 +24,7 @@ def test_create_widget(qtbot):
 
     # Check it's constructor:
     assert widget.expense_modify_handler == expense_modify_handler
+
 
 def test_add_data(qtbot):
     # Create widget with data:
@@ -38,6 +39,7 @@ def test_add_data(qtbot):
     for i, row in enumerate(test_data):
         for j, x in enumerate(row[:-1]):
             assert widget.item(i, j).text() == test_data[i][j]
+
 
 def test_cell_changed(qtbot):
     # Define a modify handler to be called on cell edit:
@@ -55,13 +57,14 @@ def test_cell_changed(qtbot):
     widget.add_data(test_data)
 
     # Check the edit without selection:
-    widget.cellChanged.emit(0,0)
-    assert expense_modify_handler.was_called == False
+    widget.cellChanged.emit(0, 0)
+    assert expense_modify_handler.was_called is False
 
     # Check the edit after selection:
-    widget.cellDoubleClicked.emit(0,0)
-    widget.cellChanged.emit(0,0)
-    assert expense_modify_handler.was_called == True
+    widget.cellDoubleClicked.emit(0, 0)
+    widget.cellChanged.emit(0, 0)
+    assert expense_modify_handler.was_called is True
+
 
 def test_create_group(qtbot):
     # Create labeled widget:
@@ -74,6 +77,7 @@ def test_create_group(qtbot):
     assert widget.category_pk_to_name    == category_pk_to_name
     assert widget.expanse_delete_handler == exp_delete_handler
 
+
 def test_set_expenses(qtbot):
     # Add widget and fill it with data:
     widget = LabeledExpenseTable(category_pk_to_name,
@@ -82,7 +86,7 @@ def test_set_expenses(qtbot):
     qtbot.addWidget(widget)
 
     exps = [Expense(100, 1, expense_date="12.12.2012 15:30",
-                            comment="test"),
+                    comment="test"),
             Expense(200, 2, expense_date="12.12.2012 15:30")]
     widget.set_expenses(exps)
 
@@ -96,19 +100,20 @@ def test_set_expenses(qtbot):
         assert str(exp.comment)                  == w_data[3]
         assert str(exp.pk)                       == w_data[4]
 
+
 def test_delete_expenses(qtbot):
     # Define a delete handler to be called on cell edit:
     def exp_delete_handler(exp_pks):
         exp_delete_handler.was_called = True
 
-        assert exp_pks == set([2,3])
+        assert exp_pks == set([2, 3])
 
     exp_delete_handler.was_called = False
 
     # Create widget and fill it with data:
     widget = LabeledExpenseTable(category_pk_to_name,
-                                expense_modify_handler,
-                                exp_delete_handler)
+                                 expense_modify_handler,
+                                 exp_delete_handler)
     qtbot.addWidget(widget)
 
     exps = [Expense(100, 1, pk=1), Expense(200, 2, pk=2),
@@ -117,15 +122,15 @@ def test_delete_expenses(qtbot):
 
     # Select the initial selection:
     widget.table.setRangeSelected(
-                qt_api.QtWidgets.QTableWidgetSelectionRange(1,1,2,2), True)
+        qt_api.QtWidgets.QTableWidgetSelectionRange(1, 1, 2, 2), True)
     widget.table.setRangeSelected(
-                qt_api.QtWidgets.QTableWidgetSelectionRange(1,3,3,4), True)
+        qt_api.QtWidgets.QTableWidgetSelectionRange(1, 3, 3, 4), True)
 
     # Perform the mouse-click:
     qtbot.mouseClick(
-            widget.del_button,
-            qt_api.QtCore.Qt.MouseButton.LeftButton
-        )
+        widget.del_button,
+        qt_api.QtCore.Qt.MouseButton.LeftButton
+    )
 
     # Expect delete handler to be called:
-    assert exp_delete_handler.was_called == True
+    assert exp_delete_handler.was_called is True

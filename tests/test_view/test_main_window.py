@@ -16,6 +16,7 @@ deleter        = lambda pks: None
 cats_edit_show = lambda: None
 adder          = lambda amount, name, comment: None
 
+
 def test_create_window(qtbot):
     # Create the window:
     budget_table   = LabeledBudgetTable(modifier)
@@ -30,12 +31,13 @@ def test_create_window(qtbot):
     assert window.new_expense   == new_expense
     assert window.expense_table == expenses_table
 
+
 def test_close_event(qtbot, monkeypatch):
     # Test the close event dialogue:
     for result, msg in zip(
-                [True, False],
-                [qt_api.QtWidgets.QMessageBox.Yes, qt_api.QtWidgets.QMessageBox.No]
-                    ):
+        [True, False],
+        [qt_api.QtWidgets.QMessageBox.Yes, qt_api.QtWidgets.QMessageBox.No]
+    ):
         # Create the window:
         budget_table   = LabeledBudgetTable(modifier)
         new_expense    = NewExpense([], cats_edit_show, adder)
@@ -45,8 +47,10 @@ def test_close_event(qtbot, monkeypatch):
         qtbot.addWidget(window)
 
         # Clock on Yes/No:
-        monkeypatch.setattr(qt_api.QtWidgets.QMessageBox,
-            "question", lambda *args: msg)
+        monkeypatch.setattr(
+            qt_api.QtWidgets.QMessageBox,
+            "question",
+            (lambda *args: msg))
 
         # Check the window successive close result:
         assert window.close() == result

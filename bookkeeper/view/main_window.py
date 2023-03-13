@@ -7,6 +7,7 @@ from bookkeeper.view.budget_table  import LabeledBudgetTable
 from bookkeeper.view.expense_table import LabeledExpenseTable
 from bookkeeper.view.new_expense   import NewExpense
 
+
 # pylint: disable=too-few-public-methods
 class MainWindow(QtWidgets.QWidget):
     """
@@ -42,7 +43,8 @@ class MainWindow(QtWidgets.QWidget):
 
     def closeEvent(self, event: QEvent) -> None:  # pylint: disable=invalid-name
         # Spawn a messagebox:
-        reply = QtWidgets.QMessageBox.question(self,
+        reply = QtWidgets.QMessageBox.question(
+            self,
             "Закрыть приложение",
             "Вы уверены?\nВсе несохраненные данные будут потеряны.")
 

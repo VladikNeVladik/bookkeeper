@@ -17,7 +17,9 @@ for db_file in ["database/bookkeeper.db"]:
         # Create table with name of a class from the list:
         with sqlite3.connect(db_file) as con:
             cur = con.cursor()
-            cur.execute(f"CREATE TABLE IF NOT EXISTS {table_name}({', '.join(fields.keys())})")
+
+            query_fields = ', '.join(fields.keys())
+            cur.execute(f"CREATE TABLE IF NOT EXISTS {table_name}({query_fields})")
         con.close()
 
 cat_repo = SQLiteRepository[Category](db_file="database/bookkeeper.db", cls=Category)

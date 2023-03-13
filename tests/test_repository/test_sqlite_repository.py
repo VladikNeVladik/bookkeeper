@@ -14,6 +14,7 @@ FIELD_INT  = 58008
 FIELD_STR  = "\"I am string\""
 FIELD_DATE = datetime.now()
 
+
 @pytest.fixture
 def custom_class():
     @dataclass
@@ -25,6 +26,7 @@ def custom_class():
 
     return Custom
 
+
 @pytest.fixture
 def custom_initialization():
     with sqlite3.connect(DB_FILE) as con:
@@ -34,8 +36,10 @@ def custom_initialization():
         cur.execute("DROP TABLE IF EXISTS custom")
 
         # Create it back from scratch:
-        cur.execute("CREATE TABLE IF NOT EXISTS custom(field_int int, field_str int, field_date text)")
+        cur.execute("CREATE TABLE IF NOT EXISTS "
+                    "custom(field_int int, field_str int, field_date text)")
     con.close()
+
 
 @pytest.fixture
 def repo(custom_initialization, custom_class):
@@ -44,6 +48,7 @@ def repo(custom_initialization, custom_class):
 ############################
 ## SQL repository testing ##
 ############################
+
 
 # Basic operational test:
 def test_crud(repo, custom_class):
@@ -77,19 +82,22 @@ def test_crud(repo, custom_class):
     repo.delete(pk)
     assert repo.get(pk) is None
 
-# Test a bunch of corner cases to lift the coverage to 100%:
 
+# Test a bunch of corner cases to lift the coverage to 100%:
 def test_cannot_add_with_filled_pk(repo, custom_class):
     obj = custom_class(pk=1)
     with pytest.raises(ValueError):
         repo.add(obj)
 
+
 def test_cannot_add_without_pk_property(repo):
     with pytest.raises(ValueError):
         repo.add(0)
 
+
 def test_get_nonexistent(repo):
     assert repo.get(-1) is None
+
 
 def test_get_all(repo, custom_class):
     # Fill repo with objects:
@@ -112,14 +120,17 @@ def test_get_all_with_condition(repo, custom_class):
     assert repo.get_all({'field_int':         0}) == [objs[0]]
     assert repo.get_all({'field_str': FIELD_STR}) == objs
 
+
 def test_cannot_update_nonexistent(repo, custom_class):
     obj = custom_class(pk=2)
     with pytest.raises(ValueError):
         repo.update(obj)
 
+
 def test_cannot_update_without_pk_property(repo, custom_class):
     with pytest.raises(ValueError):
         repo.update(0)
+
 
 def test_cannot_delete_nonexistent(repo):
     with pytest.raises(ValueError):

@@ -9,9 +9,14 @@ from bookkeeper.models.category import Category
 from bookkeeper.models.expense  import Expense
 from bookkeeper.models.budget   import Budget
 
+
 def test_create():
     # Test view creation:
     view = View()
+
+    # Unused variable:
+    del view
+
 
 def test_set_categories():
     view = View()
@@ -23,6 +28,7 @@ def test_set_categories():
         view.set_categories(cats)
 
         assert view.categories == cats
+
 
 def test_category_pk_to_name():
     # Create view with categories set:
@@ -36,6 +42,7 @@ def test_category_pk_to_name():
     assert view.category_pk_to_name(1) == "cat1"
     assert view.category_pk_to_name(3) == ""
 
+
 def test_set_expenses():
     # Create view with expenses set:
     view = View()
@@ -48,6 +55,7 @@ def test_set_expenses():
     assert view.expenses               == exps
     assert view.expense_table.expenses == exps
 
+
 def test_set_budgets():
     # Create view with budget set:
     view = View()
@@ -59,6 +67,7 @@ def test_set_budgets():
     # Test search results:
     assert view.budgets              == bdgs
     assert view.budget_table.budgets == bdgs
+
 
 def test_handle_error(qtbot, monkeypatch):
     # Define handlers:
@@ -80,16 +89,18 @@ def test_handle_error(qtbot, monkeypatch):
     qtbot.addWidget(widget)
 
     # Set the handler to be called on exception:
-    monkeypatch.setattr(qt_api.QtWidgets.QMessageBox,
+    monkeypatch.setattr(
+        qt_api.QtWidgets.QMessageBox,
         "critical", monkey_func)
 
     # Test no-error no-handler scenario:
     try_for_widget(handler_noerr, widget)()
-    assert monkey_func.was_called == False
+    assert monkey_func.was_called is False
 
     # Test error+handler scenario:
     try_for_widget(handler_err, widget)()
-    assert monkey_func.was_called == True
+    assert monkey_func.was_called is True
+
 
 def test_set_handler(monkeypatch):
     # Create view:
@@ -126,8 +137,10 @@ def test_set_handler(monkeypatch):
     assert handler.call_count == 5
 
     # Press the Yes button for the message box:
-    monkeypatch.setattr(qt_api.QtWidgets.QMessageBox,
-                "question", lambda *args: qt_api.QtWidgets.QMessageBox.Yes)
+    monkeypatch.setattr(
+        qt_api.QtWidgets.QMessageBox,
+        "question",
+        (lambda *args: qt_api.QtWidgets.QMessageBox.Yes))
 
     # Test set_expense_add_handler:
     view.set_expense_delete_handler(handler)
@@ -138,6 +151,7 @@ def test_set_handler(monkeypatch):
     view.set_expense_modify_handler(handler)
     view.modify_expense(1, 'attr', 'new_val')
     assert handler.call_count == 7
+
 
 def test_delete_expenses(monkeypatch):
     # Define expense delete handler:
@@ -150,7 +164,7 @@ def test_delete_expenses(monkeypatch):
     view = View()
     view.set_expense_delete_handler(deleter)
 
-    #============================#
+    # =========================== #
     # Define "Ok" m-box answerer:
     def monkey_func_ok(*args):
         monkey_func_ok.was_called = True
@@ -160,17 +174,18 @@ def test_delete_expenses(monkeypatch):
     monkey_func_ok.call_count = False
 
     # Set handler called on m-box answer:
-    monkeypatch.setattr(qt_api.QtWidgets.QMessageBox,
-            "critical", monkey_func_ok)
+    monkeypatch.setattr(
+        qt_api.QtWidgets.QMessageBox,
+        "critical", monkey_func_ok)
 
     # Delete expenses incorrectly:
     view.delete_expenses([])
 
     # Expect nothing to be deleted:
-    assert monkey_func_ok.was_called == True
-    assert deleter.was_called        == False
+    assert monkey_func_ok.was_called is True
+    assert deleter.was_called        is False
 
-    #============================#
+    # =========================== #
     # Define "No" m-box answerer:
     def monkey_func_no(*args):
         monkey_func_no.was_called = True
@@ -180,17 +195,18 @@ def test_delete_expenses(monkeypatch):
     monkey_func_no.was_called = False
 
     # Set handler called on m-box answer:
-    monkeypatch.setattr(qt_api.QtWidgets.QMessageBox,
-                "question", monkey_func_no)
+    monkeypatch.setattr(
+        qt_api.QtWidgets.QMessageBox,
+        "question", monkey_func_no)
 
     # Delete expenses correctly:
     view.delete_expenses([1])
 
     # Expect nothing to be deleted:
-    assert monkey_func_no.was_called == True
-    assert deleter.was_called == False
+    assert monkey_func_no.was_called is True
+    assert deleter.was_called is False
 
-    #============================#
+    # =========================== #
     # Define "No" m-box answerer:
     def monkey_func_yes(*args):
         monkey_func_yes.was_called = True
@@ -200,15 +216,17 @@ def test_delete_expenses(monkeypatch):
     monkey_func_yes.was_called = False
 
     # Set handler called on m-box answer:
-    monkeypatch.setattr(qt_api.QtWidgets.QMessageBox,
-                "question", monkey_func_yes)
+    monkeypatch.setattr(
+        qt_api.QtWidgets.QMessageBox,
+        "question", monkey_func_yes)
 
     # Delete expenses correctly:
     view.delete_expenses([1])
 
     # Expect delete_handler to be called:
-    assert monkey_func_yes.was_called == True
-    assert deleter.was_called == True
+    assert monkey_func_yes.was_called is True
+    assert deleter.was_called is True
+
 
 def test_not_on_budget_message(monkeypatch):
     # Create handler to be called on messagebox:
@@ -223,11 +241,12 @@ def test_not_on_budget_message(monkeypatch):
     view = View()
 
     # Set handler called on m-box answer:
-    monkeypatch.setattr(qt_api.QtWidgets.QMessageBox,
-            "warning", monkey_func)
+    monkeypatch.setattr(
+        qt_api.QtWidgets.QMessageBox,
+        "warning", monkey_func)
 
     # Eject message:
     view.not_on_budget_message()
 
     # Expect message to appear:
-    assert monkey_func.was_called == True
+    assert monkey_func.was_called is True

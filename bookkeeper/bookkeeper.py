@@ -252,12 +252,12 @@ class Bookkeeper:
         if attr == "expense_date":
             # Parse datetime:
             try:
-                time = datetime.fromisoformat(new_val).isoformat(
-                    sep='\t', timespec='minutes')
+                time_str  = datetime.fromisoformat(new_val)
+                time_date = time_str.isoformat(sep='\t', timespec='minutes')
             except ValueError as exc:
                 raise ValueError("Неправильный формат даты.") from exc
 
-            exp.expense_date = time
+            setattr(exp, attr, time_date)
 
         # Update the expense:
         self.expense_repo.update(exp)

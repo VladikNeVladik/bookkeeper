@@ -11,6 +11,7 @@ from bookkeeper.view.new_expense import NewExpense
 edit_button_handler = lambda: None
 expense_add_handler = lambda amount, cat_name, comment: None
 
+
 def test_create_group(qtbot):
     # Create widget:
     widget = NewExpense([],
@@ -23,11 +24,10 @@ def test_create_group(qtbot):
     assert widget.edit_button_handler == edit_button_handler
     assert widget.expense_add_handler == expense_add_handler
 
+
 def test_set_categories(qtbot):
     # Create widget and fill it with data:
-    widget = NewExpense([],
-                             edit_button_handler,
-                             expense_add_handler,)
+    widget = NewExpense([], edit_button_handler, expense_add_handler)
     qtbot.addWidget(widget)
 
     cats = [Category("cat1"), Category("cat2"),]
@@ -36,6 +36,7 @@ def test_set_categories(qtbot):
     # Check the data:
     assert widget.categories == cats
     assert widget.cat_names  == [c.name for c in cats]
+
 
 def test_add_expense(qtbot):
     # Create the handler to be called on expense addition:
@@ -50,9 +51,8 @@ def test_add_expense(qtbot):
 
     # Create widget:
     cats   = [Category("cat1"), Category("cat2"),]
-    widget = NewExpense(cats,
-                             edit_button_handler,
-                             expense_add_handler,)
+    widget = NewExpense(cats, edit_button_handler,
+                        expense_add_handler)
     qtbot.addWidget(widget)
 
     # Set the values to line inputs:
@@ -62,9 +62,9 @@ def test_add_expense(qtbot):
 
     # Perform the mouseclick:
     qtbot.mouseClick(
-                widget.submit_button,
-                qt_api.QtCore.Qt.MouseButton.LeftButton
-            )
+        widget.submit_button,
+        qt_api.QtCore.Qt.MouseButton.LeftButton
+    )
 
     # Expect the handler to be called:
-    assert expense_add_handler.was_called == True
+    assert expense_add_handler.was_called is True

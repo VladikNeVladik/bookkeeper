@@ -8,10 +8,12 @@ from bookkeeper.view.category_edit_window import CategoryEditWindow
 
 from bookkeeper.models.category import Category
 
+
 # Dummy handlers:
-cat_add_handler    = lambda name, parent : None
-cat_delete_handler = lambda cat_name     : None
-cat_checker        = lambda parent_name  : None
+cat_add_handler    = lambda name, parent: None
+cat_delete_handler = lambda cat_name: None
+cat_checker        = lambda parent_name: None
+
 
 def test_create_window(qtbot):
     # Create widget:
@@ -21,6 +23,7 @@ def test_create_window(qtbot):
     # Verify the constructor:
     assert widget.cat_add_handler    == cat_add_handler
     assert widget.cat_delete_handler == cat_delete_handler
+
 
 def test_set_categories(qtbot):
     # Create widget and fill it with data:
@@ -46,6 +49,7 @@ def test_set_categories(qtbot):
     assert widget.cat_tree.topLevelItem(0).child(1).text(0) == "cat12"
     assert widget.cat_tree.topLevelItem(0).child(1).child(0).text(0) == "cat121"
 
+
 def test_set_cat_checker(qtbot):
     # Create widget with checker handler set:
     widget = CategoryEditWindow([], cat_add_handler, cat_delete_handler)
@@ -56,10 +60,11 @@ def test_set_cat_checker(qtbot):
     # Verify the checker:
     assert widget.cat_checker == cat_checker
 
+
 def test_double_clicked(qtbot):
     # Create widget:
     widget = CategoryEditWindow([Category("cat1", pk=1)],
-                                  cat_add_handler, cat_delete_handler)
+                                cat_add_handler, cat_delete_handler)
     qtbot.addWidget(widget)
 
     # Double click at the top-most category:
@@ -72,6 +77,7 @@ def test_double_clicked(qtbot):
     assert widget.cat_del.text()        == clicked_cat_name
     assert widget.cat_add_parent.text() == clicked_cat_name
 
+
 def test_delete_category(qtbot):
     # Define category deletion handler:
     def cat_delete_handler(cat_name):
@@ -83,7 +89,7 @@ def test_delete_category(qtbot):
 
     # Create widget:
     widget = CategoryEditWindow([Category("cat1", pk=1)],
-                                   cat_add_handler, cat_delete_handler)
+                                cat_add_handler, cat_delete_handler)
     qtbot.addWidget(widget)
 
     # Set the category to be deleted:
@@ -94,7 +100,8 @@ def test_delete_category(qtbot):
     )
 
     # Check the handler to be called:
-    assert cat_delete_handler.was_called == True
+    assert cat_delete_handler.was_called is True
+
 
 def test_add_category(qtbot):
     # Define category addition handler:
@@ -108,7 +115,7 @@ def test_add_category(qtbot):
 
     # Create widget:
     widget = CategoryEditWindow([Category("cat1", pk=1)],
-                                   cat_add_handler, cat_delete_handler)
+                                cat_add_handler, cat_delete_handler)
     qtbot.addWidget(widget)
     widget.set_cat_checker(cat_checker)
 
@@ -121,7 +128,8 @@ def test_add_category(qtbot):
     )
 
     # Expect the handler to be called:
-    assert cat_add_handler.was_called == True
+    assert cat_add_handler.was_called is True
+
 
 def test_add_category_no_parent(qtbot):
     # Define category addition handler:
@@ -129,7 +137,7 @@ def test_add_category_no_parent(qtbot):
         cat_add_handler.was_called = True
 
         assert name   == "cat1"
-        assert parent == None
+        assert parent is None
 
     cat_add_handler.was_called = False
 
@@ -158,4 +166,4 @@ def test_add_category_no_parent(qtbot):
     assert add_parent_text == widget.cat_add_parent.text()
 
     # Expect the handler to be called:
-    assert cat_add_handler.was_called == True
+    assert cat_add_handler.was_called is True

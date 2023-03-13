@@ -42,6 +42,7 @@ class LabeledLineInput(QtWidgets.QWidget):
     def set_text(self, text: str) -> None:
         self.input.setText(text)
 
+
 class LabeledComboBoxInput(QtWidgets.QWidget):
     """
     Поле выбора из нескольких вариантов.
@@ -63,8 +64,10 @@ class LabeledComboBoxInput(QtWidgets.QWidget):
         self.combo_box = QtWidgets.QComboBox()
 
         self.combo_box.setEditable(True)
-        self.combo_box.view().setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded) # type: ignore
         self.combo_box.setMaxVisibleItems(16)
+
+        combo_view = self.combo_box.view()
+        combo_view.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)  # type: ignore
 
         self.set_items(items)
 

@@ -86,9 +86,10 @@ class BudgetTableWidget(QtWidgets.QTableWidget):
 
                 # Select the upper row for edit:
                 if col_j == 0:
-                    # type: ignore
-                    flags = Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
-                    self.item(row_i, col_j).setFlags(flags)
+                    self.item(row_i, col_j).setFlags(
+                        Qt.ItemIsEditable |   # type: ignore
+                        Qt.ItemIsEnabled  |   # type: ignore
+                        Qt.ItemIsSelectable)  # type: ignore
                 else:
                     self.item(row_i, col_j).setFlags(Qt.ItemIsEnabled)  # type: ignore
 

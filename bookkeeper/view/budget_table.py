@@ -3,7 +3,7 @@ from typing import Callable, Any
 from PySide6        import QtWidgets
 from PySide6.QtCore import Signal, Qt  # pylint: disable=no-name-in-module
 
-from bookkeeper.models.budget import Budget, Period
+from bookkeeper.models.budget import Budget
 
 
 class BudgetTableWidget(QtWidgets.QTableWidget):
@@ -136,7 +136,7 @@ class LabeledBudgetTable(QtWidgets.QGroupBox):
         data = []
 
         # Iterate over subtables:
-        for period in [Period.DAY, Period.WEEK, Period.MONTH]:
+        for period in ["day", "week", "month"]:
             budgets_for_period = [bdg for bdg in budgets if bdg.period == period]
 
             if len(budgets_for_period) == 0:

@@ -16,6 +16,12 @@ poetry run pylint bookkeeper
 poetry run flake8 bookkeeper
 ```
 
+Авто-наполение базы данных:
+```commandline
+poetry run python3 create_db_table.py
+```
+
+
 Запуск приложения:
 ```commandline
 poetry run python3 -m bookkeeper

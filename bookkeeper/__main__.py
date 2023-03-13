@@ -1,6 +1,10 @@
+"""
+Простая программа для управления личными финансами.
+"""
+
 import sys
 
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication  # pylint: disable=no-name-in-module
 
 from bookkeeper.bookkeeper import Bookkeeper
 

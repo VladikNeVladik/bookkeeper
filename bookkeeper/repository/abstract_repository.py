@@ -75,11 +75,16 @@ def repository_factory(
     repo_type : Any,
     db_file   : str | None = None
 ) -> Callable[[Model], Any]:
+    """
+    Конкретная фабрика абстрактных репозиториев:
+    больше абстракции богу абстракции!
+    """
+
     if db_file is None:
-        def repo_gen(model: Model) -> Any:
+        def repo_gen_nofile(model: Model) -> Any:
             return repo_type[model](cls=model)
-        return repo_gen
-    else:
-        def repo_gen(model: Model) -> Any:
-            return repo_type[model](db_file=db_file, cls=model)
-        return repo_gen
+        return repo_gen_nofile
+
+    def repo_gen_withfile(model: Model) -> Any:
+        return repo_type[model](db_file=db_file, cls=model)
+    return repo_gen_withfile

@@ -1,7 +1,7 @@
-from PySide6        import QtWidgets
-from PySide6.QtCore import Signal, Qt
-
 from typing import Callable, Any
+
+from PySide6        import QtWidgets
+from PySide6.QtCore import Signal, Qt  # pylint: disable=no-name-in-module
 
 from bookkeeper.models.expense import Expense
 
@@ -12,6 +12,8 @@ class ExpenseTableWidget(QtWidgets.QTableWidget):
 
     cellDoubleClicked : Signal # Double-click handler with attachable pre-handler
     cellChanged       : Signal # Cell changed handler with attachable pre-handler
+
+    data : list[list[str]]
 
     def __init__(
         self,
@@ -56,6 +58,9 @@ class ExpenseTableWidget(QtWidgets.QTableWidget):
         self.cellDoubleClicked.connect(self.double_click)
 
     def double_click(self, row: int, column: int) -> None:
+        # Parameters unused:
+        del row, column
+
         # Bind the cell_changed() as cellChanged handler
         self.cellChanged.connect(self.cell_changed)
 
@@ -72,10 +77,10 @@ class ExpenseTableWidget(QtWidgets.QTableWidget):
 
     def add_data(self, data: list[list[str]]) -> None:
         self.data = data
-        for i, row in enumerate(data):
-            for j, item in enumerate(row[:-1]):
+        for row_i, row in enumerate(data):
+            for item_j, item in enumerate(row[:-1]):
                 self.setItem(
-                    i, j,
+                    row_i, item_j,
                     QtWidgets.QTableWidgetItem(item.capitalize())
                 )
 
@@ -83,6 +88,9 @@ class LabeledExpenseTable(QtWidgets.QGroupBox):
     """
     Виджет для расхода с подписью.
     """
+
+    expenses : list[Expense]
+    data     : list[list[str]]
 
     def __init__(
         self,

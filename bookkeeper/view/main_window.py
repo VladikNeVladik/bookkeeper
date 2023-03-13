@@ -1,15 +1,13 @@
-from PySide6        import QtWidgets
-from PySide6.QtCore import QEvent, Qt
-from PySide6.QtGui  import QAction
+from typing import Any
 
-from typing import Callable, Any
+from PySide6        import QtWidgets
+from PySide6.QtCore import QEvent  # pylint: disable=no-name-in-module
 
 from bookkeeper.view.budget_table  import LabeledBudgetTable
 from bookkeeper.view.expense_table import LabeledExpenseTable
 from bookkeeper.view.new_expense   import NewExpense
 
-from bookkeeper.models.category import Category
-
+# pylint: disable=too-few-public-methods
 class MainWindow(QtWidgets.QWidget):
     """
     Главное окно программы.
@@ -42,7 +40,7 @@ class MainWindow(QtWidgets.QWidget):
 
         self.setLayout(self.vbox)
 
-    def closeEvent(self, event: QEvent) -> None:
+    def closeEvent(self, event: QEvent) -> None:  # pylint: disable=invalid-name
         # Spawn a messagebox:
         reply = QtWidgets.QMessageBox.question(self,
             "Закрыть приложение",

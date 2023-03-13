@@ -1,17 +1,25 @@
+"""
+Основной класс простого приложения для управляющего личными финансами.
+"""
+
 from datetime import datetime
 
-from typing import Callable, Any, Type
+from typing import Callable, Any
 
 from bookkeeper.view.abstract_view import AbstractView
 
-from bookkeeper.repository.abstract_repository import AbstractRepository, T
+from bookkeeper.repository.abstract_repository import AbstractRepository
 
 from bookkeeper.models.category import Category
 from bookkeeper.models.expense  import Expense
-from bookkeeper.models.budget   import Budget, Period
+from bookkeeper.models.budget   import Budget
 
 class Bookkeeper:
+    """
+    Реализация модели Model-View-Presenter.
+    """
 
+    # Class fields:
     view          : AbstractView
     category_repo : AbstractRepository[Category]
     budget_repo   : AbstractRepository[Budget]
@@ -45,6 +53,9 @@ class Bookkeeper:
 
         self.budget_repo = repository_factory(Budget)
 
+        # Fill the budget values:
+        self.budgets = self.budget_repo.get_all()
+
         # Configure view handlers:
         self.view.set_budget_modify_handler(self.modify_budget)
 
@@ -60,6 +71,9 @@ class Bookkeeper:
         self.view.set_expense_modify_handler(self.modify_expense)
 
     def start_app(self) -> None:
+        """
+        Отображение главного окна приложения.
+        """
         self.view.show_main_window()
 
     #########################
@@ -67,18 +81,26 @@ class Bookkeeper:
     #########################
 
     def cat_checker(self, cat_name: str) -> None:
+        """
+        Проверка целостности категории.
+        """
         if cat_name not in [c.name for c in self.categories]:
-            raise ValueError(f'Категории "{cat_name}" не существует')
+            raise ValueError(f"Категории \"{cat_name}\" не существует")
 
     def add_category(self, name: str, parent: str | None = None) -> None:
+        """
+        Добавление категории расходов: в репозиторий,
+        в программное представление и в интерфейс.
+        """
+
         # Category existent:
         if name in [c.name for c in self.categories]:
-            raise ValueError(f'Категория "{name}" уже существует')
+            raise ValueError(f"Категория \"{name}\" уже существует")
 
         # No parent category:
         if parent is not None:
             if parent not in [c.name for c in self.categories]:
-                raise ValueError(f'Категории "{parent}" не существует')
+                raise ValueError(f"Категории \"{parent}\" не существует")
             parent_pk = self.category_repo.get_all(where={'name':parent})[0].pk
         else:
             parent_pk = None
@@ -95,11 +117,16 @@ class Bookkeeper:
         self.view.set_categories(self.categories)
 
     def delete_category(self, cat_name: str) -> None:
+        """
+        Удаление категории: из базы данных, из интерфейса,
+        и из программного представления.
+        """
+
         # No categories to delete:
         cats = self.category_repo.get_all(where={"name":cat_name})
 
         if len(cats) == 0:
-            raise ValueError(f'Категории "{cat_name}" не существует')
+            raise ValueError(f"Категории \"{cat_name}\" не существует")
 
         # Repo operation:
         cat = cats[0]
@@ -128,6 +155,10 @@ class Bookkeeper:
     ########################
 
     def update_expenses(self) -> None:
+        """
+        Обновление пунктов расходов: в базе данных и в интерфейсе.
+        """
+
         self.expenses = self.expense_repo.get_all()
         self.view.set_expenses(self.expenses)
 
@@ -135,21 +166,25 @@ class Bookkeeper:
         self.update_budgets()
 
     def add_expense(self, amount: str, cat_name: str, comment: str="") -> None:
+        """
+        Добавление пунктов расходов: в базу данных и в интерфейс.
+        """
+
         # Parse user input:
         try:
             amount_int = int(amount)
-        except:
-            raise ValueError('Введите сумму целым числом.')
+        except ValueError as exc:
+            raise ValueError("Введите сумму целым числом.") from exc
 
         # Handle negative or zero amounts:
         if amount_int <= 0:
-            raise ValueError(f'Введите положительную величину покупки.')
+            raise ValueError("Введите положительную величину покупки.")
 
         # Get expense category (to link to it's id):
         cats = self.category_repo.get_all(where={"name":cat_name.lower()})
 
         if len(cats) == 0:
-            raise ValueError(f'Категории "{cat_name}" не существует')
+            raise ValueError(f"Категории \"{cat_name}\" не существует")
 
         # Create the expense:
         cat = cats[0]
@@ -157,19 +192,32 @@ class Bookkeeper:
 
         self.expense_repo.add(new_exp)
         self.update_expenses()
-        if len([b for b in self.budgets if b.spent > b.limitation]):
-            self.view.not_on_budget_message()
+
+        # Check budget limits:
+        for budget in self.budgets:
+            if budget.spent > budget.limitation:
+                self.view.not_on_budget_message()
+                return
+
 
     def delete_expenses(self, exp_pks: set[int]) -> None:
+        """
+        Удаление пунктов расходов: из базы данных и из интерфейса.
+        """
+
         for pk in exp_pks:
             self.expense_repo.delete(pk)
         self.update_expenses()
 
     def modify_expense(self, pk: int, attr: str, new_val: str) -> None:
+        """
+        Обновление пунктов расходов: в базе данных и в интерфейсе.
+        """
+
         # Get expense to be modified:
         exp = self.expense_repo.get(pk)
         if exp is None:
-            raise ValueError(f'Расхода с pk="{pk}" не существует')
+            raise ValueError(f"Расхода с pk=\"{pk}\" не существует")
 
         # Modify category:
         if attr == "category":
@@ -178,7 +226,7 @@ class Bookkeeper:
 
             if cat_name not in [c.name for c in self.categories]:
                 self.view.set_expenses(self.expenses)
-                raise ValueError(f'Категории "{cat_name}" не существует')
+                raise ValueError(f"Категории \"{cat_name}\" не существует")
 
             # Get category pk:
             cat_pk = self.category_repo.get_all(where={'name':cat_name})[0].pk
@@ -191,14 +239,14 @@ class Bookkeeper:
             # Parse integer:
             try:
                 amount = int(new_val)
-            except:
-                raise ValueError('Чем это Вы расплачивались?\n'
-                                    + 'Введите сумму целым числом.')
+            except ValueError as exc:
+                raise ValueError("Чем это Вы расплачивались?\n"
+                                    + "Введите сумму целым числом.") from exc
 
             # Check for negative amount:
             if amount <= 0:
                 self.view.set_expenses(self.expenses)
-                raise ValueError(f'Удачная покупка! Записывать не буду.')
+                raise ValueError("Удачная покупка! Записывать не буду.")
 
             setattr(exp, attr, amount)
 
@@ -208,9 +256,9 @@ class Bookkeeper:
             try:
                 time = datetime.fromisoformat(new_val).isoformat(
                             sep='\t', timespec='minutes')
-            except ValueError:
+            except ValueError as exc:
                 self.view.set_expenses(self.expenses)
-                raise ValueError(f'Неправильный формат даты.')
+                raise ValueError("Неправильный формат даты.") from exc
 
             setattr(exp, attr, time)
 
@@ -225,6 +273,11 @@ class Bookkeeper:
     #######################
 
     def update_budgets(self) -> None:
+        """
+        Обновление вычисляемых параметров бюджетов:
+        в базе данных, в интерфейсе и в программном обновлении.
+        """
+
         # Update budget integrity:
         for budget in self.budget_repo.get_all():
             budget.update_spent(self.expense_repo)
@@ -235,6 +288,10 @@ class Bookkeeper:
         self.view.set_budgets(self.budgets)
 
     def modify_budget(self, pk: int | None, new_limit: str, period: str) -> None:
+        """
+        Обновление лемита и периода бюджета: в репозитории.
+        """
+
         # Remove budget if no spendings limit is set:
         if new_limit == "":
             if pk is not None:
@@ -245,15 +302,15 @@ class Bookkeeper:
         # Parse limit as integer:
         try:
             new_limit_int = int(new_limit)
-        except ValueError:
+        except ValueError as exc:
             self.update_budgets()
-            raise ValueError('Неправильный формат.\n'
-                                + 'Введите сумму целым числом.')
+            raise ValueError("Неправильный формат.\n"
+                                + "Введите сумму целым числом.") from exc
 
         # Handler nagative limit:
         if new_limit_int < 0:
             self.update_budgets()
-            raise ValueError('За этот период придется заработать.')
+            raise ValueError("За этот период придется заработать.")
 
         # Handle nonexistent primary key:
         if pk is None:
@@ -264,7 +321,7 @@ class Bookkeeper:
             # Or update existing one:
             budget_old = self.budget_repo.get(pk)
             if budget_old is None:
-                raise ValueError(f'Бюджета с pk="{pk}" не существует')
+                raise ValueError(f"Бюджета с pk=\"{pk}\" не существует")
 
             budget_old.limitation = new_limit_int
             self.budget_repo.update(budget_old)

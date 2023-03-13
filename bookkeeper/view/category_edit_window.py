@@ -1,7 +1,11 @@
-from PySide6        import QtWidgets
-from PySide6.QtCore import Qt
+"""
+Модуль, описывающий окно редактирования категорий.
+"""
 
-from typing import Callable, Any, Optional
+from typing import Callable, Any
+
+from PySide6        import QtWidgets
+from PySide6.QtCore import Qt  # pylint: disable=no-name-in-module
 
 from bookkeeper.models.category import Category
 from bookkeeper.view.labeled    import LabeledComboBoxInput, LabeledLineInput
@@ -13,6 +17,8 @@ class CategoryEditWindow(QtWidgets.QWidget):
 
     # Class static variables:
     NO_PARENT_CATEGORY: str = "- Без родительской категории -"
+
+    cat_checker : Callable[[str], None]
 
     def __init__(self,
         cats               : list[Category],
@@ -120,6 +126,7 @@ class CategoryEditWindow(QtWidgets.QWidget):
         if parent_cat_name == CategoryEditWindow.NO_PARENT_CATEGORY:
             self.cat_add_handler(cat_add_name, None)
         else:
+            # pylint: disable=fixme
             # FIXME: normal code would change added category
             #        for circular dependencies
             #        as they would hang the program
@@ -143,6 +150,7 @@ class CategoryEditWindow(QtWidgets.QWidget):
         for child in children:
             item = QtWidgets.QTreeWidgetItem([child.name])
 
+            # pylint: disable=fixme
             # FIXME: cycle in a category hierarchy
             #        will recurse this code out!
             item.addChildren(self.find_children(parent_pk=child.pk))

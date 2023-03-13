@@ -1,9 +1,6 @@
+from typing import Callable, Any
+
 from PySide6 import QtWidgets
-
-import sys
-from typing import Protocol, Callable, Any
-
-from bookkeeper.view.abstract_view import AbstractView
 
 from bookkeeper.view.main_window          import MainWindow
 from bookkeeper.view.budget_table         import LabeledBudgetTable
@@ -13,7 +10,7 @@ from bookkeeper.view.category_edit_window import CategoryEditWindow
 
 from bookkeeper.models.category import Category
 from bookkeeper.models.expense  import Expense
-from bookkeeper.models.budget   import Budget, Period
+from bookkeeper.models.budget   import Budget
 
 # Utility function:
 def try_for_widget(
@@ -23,18 +20,37 @@ def try_for_widget(
     def inner(*args: Any, **kwargs: Any) -> Any:
         try:
             operation(*args, **kwargs)
-        except ValueError as ex:
-            QtWidgets.QMessageBox.critical(widget, 'Ошибка', str(ex))
+        except ValueError as exc:
+            QtWidgets.QMessageBox.critical(widget, 'Ошибка', str(exc))
     return inner
 
 class View:
+    """
+    Визуальное представление программы Bookkeeper.
+    """
 
-    categories       : list[Category] = []
+    # Class fields:
     main_window      : MainWindow
     budget_table     : LabeledBudgetTable
     new_expense      : NewExpense
     expense_table    : LabeledExpenseTable
     cats_edit_window : CategoryEditWindow
+
+    # Internal representation:
+    categories : list[Category] = []
+    expenses   : list[Expense]
+    budgets    : list[Budget]
+
+    # All sorts of handlers:
+    cat_add_handler    : Callable[[str, str | None], None]
+    cat_delete_handler : Callable[[str], None]
+    cat_checker        : Callable[[str], None]
+
+    exp_add_handler    : Callable[[str, str, str], None]
+    exp_delete_handler : Callable[[set[int]], None]
+    exp_modify_handler : Callable[[int, str, str], None]
+
+    bdg_modify_handler : Callable[[int | None, str, str], None]
 
     def __init__(self) -> None:
         self.app = QtWidgets.QApplication.instance()

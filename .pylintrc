@@ -1,2 +1,5 @@
 [FORMAT]
 good-names=pk,i,x
+
+[pylint]
+disable = too-many-instance-attributes, c-extension-no-member, missing-function-docstring, missing-module-docstring, too-many-public-methods

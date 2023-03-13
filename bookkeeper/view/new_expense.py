@@ -1,12 +1,17 @@
-from PySide6 import QtWidgets
-from PySide6.QtCore import Qt
-
 from typing import Callable, Any
 
+from PySide6        import QtWidgets
+from PySide6.QtCore import Qt  # pylint: disable=no-name-in-module
+
 from bookkeeper.view.labeled import LabeledComboBoxInput, LabeledLineInput
+
 from bookkeeper.models.category import Category
 
 class NewExpense(QtWidgets.QGroupBox):
+    """
+    Интерфейс для ввода новых затрат.
+    """
+
     def __init__(
         self,
         categories          : list[Category],

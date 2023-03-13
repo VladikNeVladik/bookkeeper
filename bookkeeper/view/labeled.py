@@ -1,7 +1,8 @@
-from PySide6        import QtWidgets
-from PySide6.QtCore import Qt
+from typing import Any
 
-from typing import Callable, Any
+from PySide6        import QtWidgets
+from PySide6.QtCore import Qt  # pylint: disable=no-name-in-module
+
 
 class LabeledLineInput(QtWidgets.QWidget):
     """

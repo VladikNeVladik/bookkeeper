@@ -72,4 +72,4 @@ class Budget:
             period_exps = expense_repo.get_all_by_pattern(patterns={"expense_date":date_mask})
 
         # Update money spent:
-        self.spent = sum([int(exp.amount) for exp in period_exps])
+        self.spent = sum([int(exp.amount) for exp in period_exps])  # pylint: disable=consider-using-generator

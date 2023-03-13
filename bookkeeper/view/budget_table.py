@@ -14,7 +14,7 @@ class BudgetTableWidget(QtWidgets.QTableWidget):
     cellChanged       : Signal  # Cell edit handler with attachable pre-handler
 
     def __init__(self,
-        budget_modify_handler : Callable[[int | None, str, Period], None],
+        budget_modify_handler : Callable[[int, str, str], None],
         *args                 : Any,
         **kwargs              : Any
     ):
@@ -22,9 +22,9 @@ class BudgetTableWidget(QtWidgets.QTableWidget):
 
         self.budget_modify_handler = budget_modify_handler
 
-        self.row_to_period = {0:Period.DAY,
-                              1:Period.WEEK,
-                              2:Period.MONTH}
+        self.row_to_period = {0:"day",
+                              1:"week",
+                              2:"month"}
 
         # Table configuration:
         self.setColumnCount(3)
@@ -90,7 +90,7 @@ class LabeledBudgetTable(QtWidgets.QGroupBox):
 
     def __init__(
         self,
-        budget_modify_handler : Callable[[int | None, str, Period], None],
+        budget_modify_handler : Callable[[int, str, str], None],
         *args                 : Any,
         **kwargs              : Any
     ):

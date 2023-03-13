@@ -8,7 +8,7 @@
 """
 
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar, Protocol, Any
+from typing import Generic, TypeVar, Protocol, Callable, Any
 
 
 class Model(Protocol):  # pylint: disable=too-few-public-methods
@@ -70,3 +70,16 @@ class AbstractRepository(ABC, Generic[T]):
     @abstractmethod
     def delete(self, pk: int) -> None:
         """ Удалить запись """
+
+def repository_factory(
+    repo_type : Any,
+    db_file   : str | None = None
+) -> Callable[[Model], Any]:
+    if db_file is None:
+        def repo_gen(model: Model) -> Any:
+            return repo_type[model](cls=model)
+        return repo_gen
+    else:
+        def repo_gen(model: Model) -> Any:
+            return repo_type[model](db_file=db_file, cls=model)
+        return repo_gen

@@ -10,7 +10,7 @@ class NewExpense(QtWidgets.QGroupBox):
     def __init__(
         self,
         categories          : list[Category],
-        edit_button_handler : Callable[[None], None],
+        edit_button_handler : Callable[[], None],
         expense_add_handler : Callable[[str, str, str], None],
         *args               : Any,
         **kwargs            : Any

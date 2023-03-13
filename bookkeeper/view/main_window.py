@@ -1,6 +1,8 @@
 from PySide6        import QtWidgets
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QEvent, Qt
 from PySide6.QtGui  import QAction
+
+from typing import Callable, Any
 
 from bookkeeper.view.budget_table  import LabeledBudgetTable
 from bookkeeper.view.expense_table import LabeledExpenseTable
@@ -13,11 +15,13 @@ class MainWindow(QtWidgets.QWidget):
     Главное окно программы.
     """
 
-    def __init__(self,
+    def __init__(
+        self,
         budget_table  : LabeledBudgetTable,
         new_expense   : NewExpense,
         expense_table : LabeledExpenseTable,
-        *args, **kwargs
+        *args         : Any,
+        **kwargs      : Any
     ):
         super().__init__(*args, **kwargs)
 
@@ -38,16 +42,16 @@ class MainWindow(QtWidgets.QWidget):
 
         self.setLayout(self.vbox)
 
-    def closeEvent(self, event):
+    def closeEvent(self, event: QEvent) -> None:
         # Spawn a messagebox:
         reply = QtWidgets.QMessageBox.question(self,
             "Закрыть приложение",
             "Вы уверены?\nВсе несохраненные данные будут потеряны.")
 
         # Parse Yes/No reply:
-        if reply == QtWidgets.QMessageBox.Yes:
+        if reply == QtWidgets.QMessageBox.Yes:  # type: ignore
             event.accept()
             app = QtWidgets.QApplication.instance()
-            app.closeAllWindows()
+            app.closeAllWindows()  # type: ignore
         else:
             event.ignore()

@@ -3,6 +3,8 @@ from PySide6 import QtWidgets
 import sys
 from typing import Protocol, Callable, Any
 
+from bookkeeper.view.abstract_view import AbstractView
+
 from bookkeeper.view.main_window          import MainWindow
 from bookkeeper.view.budget_table         import LabeledBudgetTable
 from bookkeeper.view.new_expense          import NewExpense
@@ -11,61 +13,19 @@ from bookkeeper.view.category_edit_window import CategoryEditWindow
 
 from bookkeeper.models.category import Category
 from bookkeeper.models.expense  import Expense
-from bookkeeper.models.budget   import Budget
+from bookkeeper.models.budget   import Budget, Period
 
-
-class AbstractView(Protocol):
-
-    def show_main_window() -> None:
-        pass
-
-    def set_categories(cats : list[Category]) -> None:
-        pass
-
-    def set_expenses(cats : list[Expense]) -> None:
-        pass
-
-    def set_budgets(cats : list[Budget]) -> None:
-        pass
-
-    def set_category_add_handler(cat_add_handler: Callable[[str, str], None]) -> None:
-        pass
-
-    def set_category_delete_handler(cat_delete_handler: Callable[[str], None]) -> None:
-        pass
-
-    def set_category_checker(cat_checker: Callable[[str], None]) -> None:
-        pass
-
-    def set_budget_modify_handler(handler: Callable[['int | None', str, str],
-                                                        None]) -> None:
-        pass
-
-    def set_expense_add_handler(exp_add_handler: Callable[[str, str, str], None]) -> None:
-        pass
-
-    def set_expense_delete_handler(exp_delete_handler: Callable[[list[int]], None]) -> None:
-        pass
-
-    def set_expense_modify_handler(exp_modify_handler: Callable[[int, str, str], None]) -> None:
-        pass
-
-    def not_on_budget_message() -> None:
-        pass
-
-        self.view.set_expense_add_handler   (self.add_expense)
-        self.view.set_expense_delete_handler(self.delete_expenses)
-        self.view.set_expense_modify_handler(self.modify_expense)
-
-
-def try_for_widget(operation, widget):
-    def inner(*args, **kwargs):
+# Utility function:
+def try_for_widget(
+    operation : Callable[..., Any],
+    widget    : QtWidgets.QWidget
+) -> Callable[..., Any]:
+    def inner(*args: Any, **kwargs: Any) -> Any:
         try:
             operation(*args, **kwargs)
         except ValueError as ex:
             QtWidgets.QMessageBox.critical(widget, 'Ошибка', str(ex))
     return inner
-
 
 class View:
 
@@ -76,8 +36,12 @@ class View:
     expense_table    : LabeledExpenseTable
     cats_edit_window : CategoryEditWindow
 
-    def __init__(self):
-        self.app = QtWidgets.QApplication.instance()
+    def __init__(self) -> None:
+        app = QtWidgets.QApplication.instance()
+        if app is None:
+            raise RuntimeError("Unable to locate the open QApplication instance")
+
+        self.app = app
 
         self.config_category_edit()
         self.budget_table = LabeledBudgetTable(self.modify_budget)
@@ -94,7 +58,7 @@ class View:
     ## Initial configuration ##
     ###########################
 
-    def config_category_edit(self):
+    def config_category_edit(self) -> None:
         self.cats_edit_window = CategoryEditWindow(
             self.categories,
             self.add_category,
@@ -103,7 +67,7 @@ class View:
         self.cats_edit_window.setWindowTitle("Редактирование категорий")
         self.cats_edit_window.resize(600, 600)
 
-    def config_main_window(self):
+    def config_main_window(self) -> None:
         self.main_window = MainWindow(self.budget_table,
                                       self.new_expense,
                                       self.expense_table)
@@ -113,15 +77,14 @@ class View:
     ## Show-like methods ##
     #######################
 
-    def show_main_window(self):
+    def show_main_window(self) -> None:
         self.main_window.show()
 
         res = self.app.exec()
 
-        print(f"Bookkeeper closed with exit status {res}")
         sys.exit()
 
-    def show_category_edit(self):
+    def show_category_edit(self) -> None:
         self.cats_edit_window.show()
 
     #########################
@@ -129,15 +92,24 @@ class View:
     #########################
 
     # Handler-wrappers:
-    def set_category_add_handler(self, cat_add_handler):
+    def set_category_add_handler(
+        self,
+        cat_add_handler: Callable[[str, str | None], None]
+    ) -> None:
         # Add exception-handling to argument handler:
         self.cat_add_handler = try_for_widget(cat_add_handler, self.main_window)
 
-    def set_category_delete_handler(self, cat_delete_handler):
+    def set_category_delete_handler(
+        self,
+        cat_delete_handler: Callable[[str], None]
+    ) -> None:
         # Add exception-handling to argument handler:
         self.cat_delete_handler = try_for_widget(cat_delete_handler, self.main_window)
 
-    def set_category_checker(self, cat_checker):
+    def set_category_checker(
+        self,
+        cat_checker : Callable[[str], None]
+    ) -> None:
         # Add exception-handling to argument handler:
         self.cat_checker = try_for_widget(cat_checker, self.main_window)
 
@@ -155,10 +127,10 @@ class View:
         self.new_expense.set_categories(self.categories)
         self.cats_edit_window.set_categories(self.categories)
 
-    def add_category(self, name, parent):
+    def add_category(self, name: str, parent: str | None) -> None:
         self.cat_add_handler(name, parent)
 
-    def delete_category(self, cat_name: str):
+    def delete_category(self, cat_name: str) -> None:
         self.cat_delete_handler(cat_name)
 
     ########################
@@ -166,13 +138,22 @@ class View:
     ########################
 
     # Handler-wrapping:
-    def set_expense_add_handler(self, exp_add_handler):
+    def set_expense_add_handler(
+        self,
+        exp_add_handler : Callable[[str, str, str], None]
+    ) -> None:
         self.exp_add_handler = try_for_widget(exp_add_handler, self.main_window)
 
-    def set_expense_delete_handler(self, exp_delete_handler):
+    def set_expense_delete_handler(
+        self,
+        exp_delete_handler : Callable[[set[int]], None]
+    ) -> None:
         self.exp_delete_handler = try_for_widget(exp_delete_handler, self.main_window)
 
-    def set_expense_modify_handler(self, exp_modify_handler):
+    def set_expense_modify_handler(
+        self,
+        exp_modify_handler : Callable[[int, str, str], None]
+    ) -> None:
         self.exp_modify_handler = try_for_widget(exp_modify_handler, self.main_window)
 
     # Direct operations:
@@ -180,10 +161,10 @@ class View:
         self.expenses = exps
         self.expense_table.set_expenses(self.expenses)
 
-    def add_expense(self, amount: str, cat_name: str, comment: str = ""):
+    def add_expense(self, amount: str, cat_name: str, comment: str = "") -> None:
         self.exp_add_handler(amount, cat_name, comment)
 
-    def delete_expenses(self, exp_pks: list[int]):
+    def delete_expenses(self, exp_pks: set[int]) -> None:
         if len(exp_pks) == 0:
             QtWidgets.QMessageBox.critical(self.main_window,
                             'Ошибка',
@@ -193,13 +174,15 @@ class View:
                 self.main_window,
                 'Удаление трат',
                 'Вы уверены, что хотите удалить все выбранные траты?')
-            if reply == QtWidgets.QMessageBox.Yes:
+            if reply == QtWidgets.QMessageBox.Yes:  # type: ignore
                 self.exp_delete_handler(exp_pks)
 
-    def modify_expense(self,
-                       pk      : int,
-                       attr    : str,
-                       new_val : Any):
+    def modify_expense(
+        self,
+        pk      : int,
+        attr    : str,
+        new_val : Any
+    ) -> None:
         self.exp_modify_handler(pk, attr, new_val)
 
     #######################
@@ -207,15 +190,26 @@ class View:
     #######################
 
     # Handler-wrapping:
-    def set_budget_modify_handler(self, bdg_modify_handler):
+    def set_budget_modify_handler(
+        self,
+        bdg_modify_handler : Callable[[int, str, str], None]
+    ) -> None:
         self.bdg_modify_handler = try_for_widget(bdg_modify_handler, self.main_window)
 
     # Direct operations:
-    def set_budgets(self, budgets: list[Budget]) -> None:
+    def set_budgets(
+        self,
+        budgets : list[Budget]
+    ) -> None:
         self.budgets = budgets
         self.budget_table.set_budgets(self.budgets)
 
-    def modify_budget(self, pk: int, new_limit: str, period: str):
+    def modify_budget(
+        self,
+        pk        : int,
+        new_limit : str,
+        period    : str
+    ) -> None:
         self.bdg_modify_handler(pk, new_limit, period)
 
     def not_on_budget_message(self) -> None:

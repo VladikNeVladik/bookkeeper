@@ -6,7 +6,7 @@ from pytestqt.qt_compat import qt_api
 
 from bookkeeper.view.budget_table import BudgetTableWidget, LabeledBudgetTable
 
-from bookkeeper.models.budget import Budget, Period
+from bookkeeper.models.budget import Budget
 
 test_data = [["1_1", "1_2", "1_3", 1],
              ["2_1", "2_2", "2_3", 2],]
@@ -55,7 +55,7 @@ def test_cell_changed(qtbot):
 
         assert pk        == test_data[1][-1]
         assert new_limit == test_data[1][0]
-        assert period    == Period.WEEK
+        assert period    == "week"
 
     budget_modify_handler.was_called = False
 
@@ -97,6 +97,6 @@ def test_set_budgets(qtbot):
         assert str(b.limitation)                     == w_data[0]
         assert str(b.spent)                          == w_data[1]
         assert str(int(b.limitation) - int(b.spent)) == w_data[2]
-        assert b.pk                                  == w_data[3]
+        assert str(b.pk)                             == w_data[3]
 
-    assert widget.data[2] == ["- Не установлен -", "", "", None]
+    assert widget.data[2] == ["- Не установлен -", "", "", ""]

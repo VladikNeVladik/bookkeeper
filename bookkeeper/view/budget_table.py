@@ -55,7 +55,11 @@ class BudgetTableWidget(QtWidgets.QTableWidget):
         self.cellChanged.disconnect(self.cell_changed)
 
         # Perform the database request:
-        pk        = int(self.data[row][-1])
+        try:
+            pk = int(self.data[row][-1])
+        except:
+            pk = None
+        
         new_limit = self.item(row, column).text()
         self.budget_modify_handler(pk, new_limit, self.row_to_period[row])
 

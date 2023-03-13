@@ -37,11 +37,9 @@ class View:
     cats_edit_window : CategoryEditWindow
 
     def __init__(self) -> None:
-        app = QtWidgets.QApplication.instance()
-        if app is None:
+        self.app = QtWidgets.QApplication.instance()
+        if self.app is None:
             raise RuntimeError("Unable to locate the open QApplication instance")
-
-        self.app = app
 
         self.config_category_edit()
         self.budget_table = LabeledBudgetTable(self.modify_budget)
@@ -79,10 +77,6 @@ class View:
 
     def show_main_window(self) -> None:
         self.main_window.show()
-
-        res = self.app.exec()
-
-        sys.exit()
 
     def show_category_edit(self) -> None:
         self.cats_edit_window.show()
@@ -192,7 +186,7 @@ class View:
     # Handler-wrapping:
     def set_budget_modify_handler(
         self,
-        bdg_modify_handler : Callable[[int, str, str], None]
+        bdg_modify_handler : Callable[[int | None, str, str], None]
     ) -> None:
         self.bdg_modify_handler = try_for_widget(bdg_modify_handler, self.main_window)
 
@@ -206,7 +200,7 @@ class View:
 
     def modify_budget(
         self,
-        pk        : int,
+        pk        : int | None,
         new_limit : str,
         period    : str
     ) -> None:

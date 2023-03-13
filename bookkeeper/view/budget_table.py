@@ -5,6 +5,7 @@ from PySide6.QtCore import Signal, Qt  # pylint: disable=no-name-in-module
 
 from bookkeeper.models.budget import Budget, Period
 
+
 class BudgetTableWidget(QtWidgets.QTableWidget):
     """
     Виджет для бюджета.
@@ -15,7 +16,8 @@ class BudgetTableWidget(QtWidgets.QTableWidget):
 
     data : list[list[str]]
 
-    def __init__(self,
+    def __init__(
+        self,
         budget_modify_handler : Callable[[int | None, str, str], None],
         *args                 : Any,
         **kwargs              : Any
@@ -24,9 +26,9 @@ class BudgetTableWidget(QtWidgets.QTableWidget):
 
         self.budget_modify_handler = budget_modify_handler
 
-        self.row_to_period = {0:"day",
-                              1:"week",
-                              2:"month"}
+        self.row_to_period = {0: "day",
+                              1: "week",
+                              2: "month"}
 
         # Table configuration:
         self.setColumnCount(3)
@@ -40,11 +42,11 @@ class BudgetTableWidget(QtWidgets.QTableWidget):
 
         # Strech on resize:
         for header in [self.horizontalHeader(), self.verticalHeader()]:
-            header.setSectionResizeMode(QtWidgets.QHeaderView.Stretch) # type: ignore
+            header.setSectionResizeMode(QtWidgets.QHeaderView.Stretch)  # type: ignore
 
         # Enter edit mode on double-click:
         self.setEditTriggers(
-            QtWidgets.QAbstractItemView.DoubleClicked) # type: ignore
+            QtWidgets.QAbstractItemView.DoubleClicked)  # type: ignore
 
         # On double click set "cell edited" handler
         self.cellDoubleClicked.connect(self.double_click)
@@ -68,7 +70,6 @@ class BudgetTableWidget(QtWidgets.QTableWidget):
         new_limit = self.item(row, column).text()
         self.budget_modify_handler(pk, new_limit, self.row_to_period[row])
 
-
     def add_data(self, data: list[list[str]]) -> None:
         self.data = data
 
@@ -85,9 +86,9 @@ class BudgetTableWidget(QtWidgets.QTableWidget):
 
                 # Select the upper row for edit:
                 if col_j == 0:
-                    self.item(row_i, col_j).setFlags(Qt.ItemIsEditable       # type: ignore
-                                                     | Qt.ItemIsEnabled      # type: ignore
-                                                     | Qt.ItemIsSelectable)  # type: ignore
+                    # type: ignore
+                    flags = Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+                    self.item(row_i, col_j).setFlags(flags)
                 else:
                     self.item(row_i, col_j).setFlags(Qt.ItemIsEnabled)  # type: ignore
 

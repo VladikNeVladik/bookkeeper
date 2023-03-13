@@ -8,6 +8,7 @@ from datetime    import datetime, timedelta
 from bookkeeper.repository.abstract_repository import AbstractRepository
 from bookkeeper.models.expense                 import Expense
 
+
 class Period(Enum):
     """
     Enum для задания кванта планирования бюджета.
@@ -15,6 +16,7 @@ class Period(Enum):
     DAY   = 0
     WEEK  = 1
     MONTH = 2
+
 
 @dataclass
 class Budget:
@@ -28,8 +30,13 @@ class Budget:
     spent      : int = 0  # The amount of money spent in the period
     pk         : int = 0  # Primary key
 
-    def __init__(self, limitation: int, period: str,
-                       spent: int = 0, pk: int = 0):
+    def __init__(
+        self,
+        limitation : int,
+        period     : str,
+        spent      : int = 0,
+        pk         : int = 0
+    ):
         # Parse the period:
         if period == "day":
             self.period = Period.DAY
@@ -39,7 +46,7 @@ class Budget:
             self.period = Period.MONTH
         else:
             raise ValueError(f"unknown period \"{period}\" for budget\n"
-                             + "should be \"day\", \"week\" or \"month\"")
+                             "should be \"day\", \"week\" or \"month\"")
 
         # Set other parameters:
         self.limitation = limitation
@@ -48,11 +55,11 @@ class Budget:
 
     def update_spent(self, expense_repo: AbstractRepository[Expense]) -> None:
         # Generate timestamp for operation:
-        date = datetime.now().isoformat()[:10] # YYYY-MM-DD format
+        date = datetime.now().isoformat()[:10]  # YYYY-MM-DD format
 
         if self.period == Period.DAY:
-            date_mask   = f"{date}"
-            period_exps = expense_repo.get_all_by_pattern(patterns={"expense_date":date_mask})
+            mask   = f"{date}"
+            period_exps = expense_repo.get_all_by_pattern({"expense_date": mask})
 
         elif self.period == Period.WEEK:
             weekday_now    = datetime.now().weekday()
@@ -62,14 +69,15 @@ class Budget:
             period_exps = []
             for i in range(7):
                 weekday   = first_week_day + timedelta(days=i)
-                date_mask = f"{weekday.isoformat()[:10]}"
+                mask = f"{weekday.isoformat()[:10]}"
 
-                period_exps += expense_repo.get_all_by_pattern(patterns={"expense_date":date_mask})
+                period_exps += expense_repo.get_all_by_pattern({"expense_date": mask})
 
         elif self.period == Period.MONTH:
-            date_mask = f"{date[:7]}-"
+            mask = f"{date[:7]}-"
 
-            period_exps = expense_repo.get_all_by_pattern(patterns={"expense_date":date_mask})
+            period_exps = expense_repo.get_all_by_pattern({"expense_date": mask})
 
         # Update money spent:
-        self.spent = sum([int(exp.amount) for exp in period_exps])  # pylint: disable=consider-using-generator
+        # pylint: disable=consider-using-generator
+        self.spent = sum([int(exp.amount) for exp in period_exps])

@@ -24,8 +24,3 @@ PySide6   = "^6.4.2"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.flake8]
-max-line-length = "90"
-max-complexity = "10"
-ignore = "E203, E221, E241, E266, E272"

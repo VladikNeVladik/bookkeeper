@@ -144,7 +144,6 @@ class SQLiteRepository(AbstractRepository[T]):
         # Call regular get_all():
         return self.get_all(where=where)
 
-
     def update(self, obj: T) -> None:
         if getattr(obj, 'pk', None) is None:
             raise ValueError("Unable to update object without `pk` attribute")

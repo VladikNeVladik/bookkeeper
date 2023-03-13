@@ -10,6 +10,7 @@ from PySide6.QtCore import Qt  # pylint: disable=no-name-in-module
 from bookkeeper.models.category import Category
 from bookkeeper.view.labeled    import LabeledComboBoxInput, LabeledLineInput
 
+
 class CategoryEditWindow(QtWidgets.QWidget):
     """
     Окно для добавления/редактирования/удаления категорий
@@ -20,7 +21,8 @@ class CategoryEditWindow(QtWidgets.QWidget):
 
     cat_checker : Callable[[str], None]
 
-    def __init__(self,
+    def __init__(
+        self,
         cats               : list[Category],
         cat_add_handler    : Callable[[str, str | None], None],
         cat_delete_handler : Callable[[str], None],
@@ -32,9 +34,9 @@ class CategoryEditWindow(QtWidgets.QWidget):
         self.cat_add_handler    = cat_add_handler
         self.cat_delete_handler = cat_delete_handler
 
-        #===============#
-        # Category tree #
-        #===============#
+        # =============== #
+        #  Category tree  #
+        # =============== #
         # Label:
         label_cats = QtWidgets.QLabel("<b>Список категорий</b>")
         label_cats.setAlignment(Qt.AlignCenter)  # type: ignore
@@ -44,9 +46,9 @@ class CategoryEditWindow(QtWidgets.QWidget):
         self.cat_tree.setHeaderLabel("")
         self.cat_tree.itemDoubleClicked.connect(self.double_clicked)  # type: ignore
 
-        #===================#
-        # Category deletion #
-        #===================#
+        # =================== #
+        #  Category deletion  #
+        # =================== #
         # Label:
         label_del = QtWidgets.QLabel("<b>Удаление категории</b>")
         label_del.setAlignment(Qt.AlignCenter)  # type: ignore
@@ -58,9 +60,9 @@ class CategoryEditWindow(QtWidgets.QWidget):
         self.cat_del_button = QtWidgets.QPushButton('Удалить')
         self.cat_del_button.clicked.connect(self.delete_category)  # type: ignore
 
-        #===================#
-        # Category addition #
-        #===================#
+        # =================== #
+        #  Category addition  #
+        # =================== #
         # Label:
         label_add = QtWidgets.QLabel("<b>Добавление категории</b>")
         label_add.setAlignment(Qt.AlignCenter)  # type: ignore
@@ -106,8 +108,8 @@ class CategoryEditWindow(QtWidgets.QWidget):
         self.cat_tree.insertTopLevelItems(0, cat_hierarchy)
 
         self.cat_del.set_items(self.cat_names)
-        self.cat_add_parent.set_items([CategoryEditWindow.NO_PARENT_CATEGORY]
-                                      + self.cat_names)
+        self.cat_add_parent.set_items(
+            [CategoryEditWindow.NO_PARENT_CATEGORY] + self.cat_names)
 
     def delete_category(self) -> None:
         # Category to be deleted:
@@ -139,8 +141,10 @@ class CategoryEditWindow(QtWidgets.QWidget):
         self.cat_add_name.clear()
         self.cat_add_parent.clear()
 
-
-    def find_children(self, parent_pk: int | None = None) -> list[QtWidgets.QTreeWidgetItem]:
+    def find_children(
+        self,
+        parent_pk: int | None = None
+    ) -> list[QtWidgets.QTreeWidgetItem]:
         """
         Обход списка категорий с построением их иерархии.
         """

@@ -71,6 +71,7 @@ class AbstractRepository(ABC, Generic[T]):
     def delete(self, pk: int) -> None:
         """ Удалить запись """
 
+
 def repository_factory(
     repo_type : Any,
     db_file   : str | None = None

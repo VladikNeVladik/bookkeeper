@@ -2,7 +2,6 @@ from PySide6        import QtWidgets
 from PySide6.QtCore import Qt
 from PySide6.QtGui  import QAction
 
-from bookkeeper.view.labeled       import LabeledCheckBox
 from bookkeeper.view.budget_table  import LabeledBudgetTable
 from bookkeeper.view.expense_table import LabeledExpenseTable
 from bookkeeper.view.new_expense   import NewExpense

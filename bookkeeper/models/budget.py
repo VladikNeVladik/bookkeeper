@@ -52,7 +52,7 @@ class Budget:
 
         if self.period == Period.DAY:
             date_mask   = f"{date}"
-            period_exps = exp_repo.get_all_like(like={"expense_date":date_mask})
+            period_exps = expense_repo.get_all_by_pattern(patterns={"expense_date":date_mask})
 
         elif self.period == Period.WEEK:
             weekday_now    = datetime.now().weekday()
@@ -64,12 +64,12 @@ class Budget:
                 weekday   = first_week_day + timedelta(days=i)
                 date_mask = f"{weekday.isoformat()[:10]}"
 
-                period_exps += exp_repo.get_all_like(like={"expense_date":date_mask})
+                period_exps += expense_repo.get_all_by_pattern(patterns={"expense_date":date_mask})
 
-        elif self.period.lower() == Period.MONTH:
+        elif self.period == Period.MONTH:
             date_mask = f"{date[:7]}-"
 
-            period_exps = exp_repo.get_all_like(like={"expense_date":date_mask})
+            period_exps = expense_repo.get_all_by_pattern(patterns={"expense_date":date_mask})
 
         # Update money spent:
         self.spent = sum([int(exp.amount) for exp in period_exps])

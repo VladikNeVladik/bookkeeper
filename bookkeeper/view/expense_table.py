@@ -1,18 +1,23 @@
 from PySide6        import QtWidgets
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Signal, Qt
 
-from typing import Callable
+from typing import Callable, Any
 
-from bookkeeper.models.expense  import Expense
+from bookkeeper.models.expense import Expense
 
 class ExpenseTableWidget(QtWidgets.QTableWidget):
     """
     Виджет для расхода.
     """
 
-    def __init__(self,
-        expense_modify_handler : Callable,
-        *args, **kwargs
+    cellDoubleClicked : Signal # Double-click handler with attachable pre-handler
+    cellChanged       : Signal # Cell changed handler with attachable pre-handler
+
+    def __init__(
+        self,
+        expense_modify_handler : Callable[[int, str, Any], None],
+        *args                  : Any,
+        **kwargs               : Any
     ):
         super().__init__(*args, **kwargs)
 
@@ -30,42 +35,42 @@ class ExpenseTableWidget(QtWidgets.QTableWidget):
         # Configure table header:
         header = self.horizontalHeader()
         header.setSectionResizeMode(
-            0, QtWidgets.QHeaderView.ResizeToContents)
+            0, QtWidgets.QHeaderView.ResizeToContents) # type: ignore
         header.setSectionResizeMode(
-            1, QtWidgets.QHeaderView.ResizeToContents)
+            1, QtWidgets.QHeaderView.ResizeToContents) # type: ignore
         header.setSectionResizeMode(
-            2, QtWidgets.QHeaderView.ResizeToContents)
+            2, QtWidgets.QHeaderView.ResizeToContents) # type: ignore
         header.setSectionResizeMode(
-            3, QtWidgets.QHeaderView.Stretch)
+            3, QtWidgets.QHeaderView.Stretch)          # type: ignore
 
         # Disable vertical header:
         self.verticalHeader().hide()
 
         # Enter edit mode on double-click:
         self.setEditTriggers(
-            QtWidgets.QAbstractItemView.DoubleClicked)
+            QtWidgets.QAbstractItemView.DoubleClicked) # type: ignore
 
-        # Handle the change event of each cell individually:
-        #   On cell double-click bind it's onChange handler.
+        # Handle the change event of all cells collectively:
+        #   On cell double-click bind onChange handler.
         #   Reset it on "onChanged" event.
         self.cellDoubleClicked.connect(self.double_click)
 
-    def double_click(self, row, columns):
+    def double_click(self, row: int, column: int) -> None:
         # Bind the cell_changed() as cellChanged handler
         self.cellChanged.connect(self.cell_changed)
 
-    def cell_changed(self, row, column):
+    def cell_changed(self, row: int, column: int) -> None:
         # Unbind cell_changed():
         self.cellChanged.disconnect(self.cell_changed)
 
         # Generate a database request on edit:
-        pk      = self.data[row][-1]
+        pk      = int(self.data[row][-1])
         new_val = self.item(row, column).text()
         attr    = self.col_to_attr[column]
 
         self.expense_modify_handler(pk, attr, new_val)
 
-    def add_data(self, data: list[list[str]]):
+    def add_data(self, data: list[list[str]]) -> None:
         self.data = data
         for i, row in enumerate(data):
             for j, item in enumerate(row[:-1]):
@@ -79,11 +84,13 @@ class LabeledExpenseTable(QtWidgets.QGroupBox):
     Виджет для расхода с подписью.
     """
 
-    def __init__(self,
-        category_pk_to_name : Callable,
-        expense_modify_handler      : Callable,
-        expanse_delete_handler      : Callable,
-        *args, **kwargs
+    def __init__(
+        self,
+        category_pk_to_name    : Callable[[int], str],
+        expense_modify_handler : Callable[[int, str, Any], None],
+        expanse_delete_handler : Callable[[set[int]], None],
+        *args                  : Any,
+        **kwargs               : Any
     ):
         super().__init__(*args, **kwargs)
 
@@ -92,14 +99,14 @@ class LabeledExpenseTable(QtWidgets.QGroupBox):
 
         # Label:
         self.label = QtWidgets.QLabel("<b>Последние траты</b>")
-        self.label.setAlignment(Qt.AlignCenter)
+        self.label.setAlignment(Qt.AlignCenter) # type: ignore
 
         # Expense table:
         self.table = ExpenseTableWidget(expense_modify_handler)
 
         # Delete button:
         self.del_button = QtWidgets.QPushButton('Удалить выбранные траты')
-        self.del_button.clicked.connect(self.delete_selected_expenses)
+        self.del_button.clicked.connect(self.delete_selected_expenses) # type: ignore
 
         # Vertical layout:
         self.vbox = QtWidgets.QVBoxLayout()
@@ -109,7 +116,7 @@ class LabeledExpenseTable(QtWidgets.QGroupBox):
 
         self.setLayout(self.vbox)
 
-    def set_expenses(self, exps: list[Expense]):
+    def set_expenses(self, exps: list[Expense]) -> None:
         self.expenses = exps
 
         # Update rendered data:
@@ -119,11 +126,11 @@ class LabeledExpenseTable(QtWidgets.QGroupBox):
         self.table.clearContents()
         self.table.add_data(self.data)
 
-    def exps_to_data(self, exps: list[Expense]):
+    def exps_to_data(self, exps: list[Expense]) -> list[list[str]]:
         data = []
         for exp in exps:
             # Visualize category fields:
-            item = ["","","","",exp.pk]
+            item = ["","","","",str(exp.pk)]
             if exp.expense_date:
                 item[0] = str(exp.expense_date)
             if exp.amount:
@@ -139,7 +146,7 @@ class LabeledExpenseTable(QtWidgets.QGroupBox):
 
         return data
 
-    def delete_selected_expenses(self):
+    def delete_selected_expenses(self) -> None:
         # List of primary keys to delete:
         pks_to_del = []
 
@@ -150,7 +157,7 @@ class LabeledExpenseTable(QtWidgets.QGroupBox):
             start = ch_range.topRow()
             end   = min(ch_range.bottomRow(), len(self.data))
 
-            pks_to_del += [i[-1] for i in self.data[start:end+1]]
+            pks_to_del += [int(i[-1]) for i in self.data[start:end+1]]
 
         # Remove from the database all utems with selected pk
         self.expanse_delete_handler(set(pks_to_del))

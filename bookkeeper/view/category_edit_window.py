@@ -1,7 +1,7 @@
 from PySide6        import QtWidgets
 from PySide6.QtCore import Qt
 
-from typing import Callable
+from typing import Callable, Any, Optional
 
 from bookkeeper.models.category import Category
 from bookkeeper.view.labeled    import LabeledComboBoxInput, LabeledLineInput
@@ -16,47 +16,48 @@ class CategoryEditWindow(QtWidgets.QWidget):
 
     def __init__(self,
         cats               : list[Category],
-        cat_add_handler    : Callable,
-        cat_delete_handler : Callable,
-        *args, **kwargs
+        cat_add_handler    : Callable[[str, str | None], None],
+        cat_delete_handler : Callable[[str], None],
+        *args              : Any,
+        **kwargs           : Any
     ):
         super().__init__(*args, **kwargs)
 
-        self.cat_add_handler    : Callable = cat_add_handler
-        self.cat_delete_handler : Callable = cat_delete_handler
+        self.cat_add_handler    = cat_add_handler
+        self.cat_delete_handler = cat_delete_handler
 
         #===============#
         # Category tree #
         #===============#
         # Label:
         label_cats = QtWidgets.QLabel("<b>Список категорий</b>")
-        label_cats.setAlignment(Qt.AlignCenter)
+        label_cats.setAlignment(Qt.AlignCenter)  # type: ignore
 
         # Category tree:
         self.cat_tree = QtWidgets.QTreeWidget()
         self.cat_tree.setHeaderLabel("")
-        self.cat_tree.itemDoubleClicked.connect(self.double_clicked)
+        self.cat_tree.itemDoubleClicked.connect(self.double_clicked)  # type: ignore
 
         #===================#
         # Category deletion #
         #===================#
         # Label:
         label_del = QtWidgets.QLabel("<b>Удаление категории</b>")
-        label_del.setAlignment(Qt.AlignCenter)
+        label_del.setAlignment(Qt.AlignCenter)  # type: ignore
 
         # Category to be deleted:
         self.cat_del = LabeledComboBoxInput("Категория", [])
 
         # Delete button:
         self.cat_del_button = QtWidgets.QPushButton('Удалить')
-        self.cat_del_button.clicked.connect(self.delete_category)
+        self.cat_del_button.clicked.connect(self.delete_category)  # type: ignore
 
         #===================#
         # Category addition #
         #===================#
         # Label:
         label_add = QtWidgets.QLabel("<b>Добавление категории</b>")
-        label_add.setAlignment(Qt.AlignCenter)
+        label_add.setAlignment(Qt.AlignCenter)  # type: ignore
 
         # Added category parent:
         self.cat_add_parent = LabeledComboBoxInput("Родитель", [])
@@ -66,7 +67,7 @@ class CategoryEditWindow(QtWidgets.QWidget):
 
         # Add button:
         self.cat_add_button = QtWidgets.QPushButton('Добавить')
-        self.cat_add_button.clicked.connect(self.add_category)
+        self.cat_add_button.clicked.connect(self.add_category)  # type: ignore
 
         # Grid layout:
         self.grid = QtWidgets.QGridLayout()
@@ -87,7 +88,7 @@ class CategoryEditWindow(QtWidgets.QWidget):
         # Set categories when the class is all set up:
         self.set_categories(cats)
 
-    def set_categories(self, cats: list[Category]):
+    def set_categories(self, cats: list[Category]) -> None:
         self.categories = cats
 
         self.cat_names = [c.name for c in cats]
@@ -102,17 +103,17 @@ class CategoryEditWindow(QtWidgets.QWidget):
         self.cat_add_parent.set_items([CategoryEditWindow.NO_PARENT_CATEGORY]
                                       + self.cat_names)
 
-    def delete_category(self):
+    def delete_category(self) -> None:
         # Category to be deleted:
         del_cat_name = self.cat_del.text()
 
         self.cat_delete_handler(del_cat_name)
         self.cat_del.clear()
 
-    def set_cat_checker(self, checker):
+    def set_cat_checker(self, checker : Callable[[str], None]) -> None:
         self.cat_checker = checker
 
-    def add_category(self):
+    def add_category(self) -> None:
         cat_add_name    = self.cat_add_name.text()
         parent_cat_name = self.cat_add_parent.text()
 
@@ -132,7 +133,7 @@ class CategoryEditWindow(QtWidgets.QWidget):
         self.cat_add_parent.clear()
 
 
-    def find_children(self, parent_pk=None):
+    def find_children(self, parent_pk: int | None = None) -> list[QtWidgets.QTreeWidgetItem]:
         """
         Обход списка категорий с построением их иерархии.
         """
@@ -150,7 +151,7 @@ class CategoryEditWindow(QtWidgets.QWidget):
 
         return items
 
-    def double_clicked(self, item, column):
+    def double_clicked(self, item: QtWidgets.QTreeWidgetItem, column: int) -> None:
         clicked_cat_name = item.text(column)
 
         # Put into input lines the name of double-clicked category:

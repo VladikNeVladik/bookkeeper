@@ -94,7 +94,7 @@ def test_set_expenses(qtbot):
         assert str(exp.amount)                   == w_data[1]
         assert category_pk_to_name(exp.category) == w_data[2]
         assert str(exp.comment)                  == w_data[3]
-        assert exp.pk                            == w_data[4]
+        assert str(exp.pk)                       == w_data[4]
 
 def test_delete_expenses(qtbot):
     # Define a delete handler to be called on cell edit:

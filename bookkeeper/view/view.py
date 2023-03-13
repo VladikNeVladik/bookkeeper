@@ -1,7 +1,7 @@
 from PySide6 import QtWidgets
 
 import sys
-from typing import Protocol, Callable
+from typing import Protocol, Callable, Any
 
 from bookkeeper.view.main_window          import MainWindow
 from bookkeeper.view.budget_table         import LabeledBudgetTable
@@ -196,7 +196,10 @@ class View:
             if reply == QtWidgets.QMessageBox.Yes:
                 self.exp_delete_handler(exp_pks)
 
-    def modify_expense(self, pk, attr, new_val):
+    def modify_expense(self,
+                       pk      : int,
+                       attr    : str,
+                       new_val : Any):
         self.exp_modify_handler(pk, attr, new_val)
 
     #######################

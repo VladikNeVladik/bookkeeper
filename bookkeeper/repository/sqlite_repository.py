@@ -136,6 +136,15 @@ class SQLiteRepository(AbstractRepository[T]):
 
         return [self.generate_object(self.fields, row) for row in rows]
 
+    def get_all_by_pattern(self, patterns: dict[str, str]) -> list[T]:
+        # Insert '%' sign to allow pattern-matching
+        values = [f"%{v}%" for v in patterns.values()]
+        where  = dict(zip(patterns.keys(), values))
+
+        # Call regular get_all():
+        return self.get_all(where=where)
+
+
     def update(self, obj: T) -> None:
         if getattr(obj, 'pk', None) is None:
             raise ValueError("Unable to update object without `pk` attribute")

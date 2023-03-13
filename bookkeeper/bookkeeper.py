@@ -68,7 +68,7 @@ class Bookkeeper:
         if cat_name not in [c.name for c in self.categories]:
             raise ValueError(f'Категории "{cat_name}" не существует')
 
-    def add_category(self, name, parent):
+    def add_category(self, name: str, parent: str | None = None):
         # Category existent:
         if name in [c.name for c in self.categories]:
             raise ValueError(f'Категория "{name}" уже существует')
@@ -224,7 +224,7 @@ class Bookkeeper:
         self.budgets = self.budget_repo.get_all()
         self.view.set_budgets(self.budgets)
 
-    def modify_budget(self, pk: int | None, new_limit: str, period: str):
+    def modify_budget(self, pk: int | None, new_limit: str, period: Period):
         # Remove budget if no spendings limit is set:
         if new_limit == "":
             if pk is not None:
